@@ -1,0 +1,2506 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Manual maestro de Gemini Notebook: grabaciones de audio, reuniones y diario personal con inteligencia artificial. Guía completa de cero a profesional.">
+<title>Gemini Notebook · Grabaciones, Reuniones y Diario Personal</title>
+<style>
+/* ==========================================================================
+   VARIABLES Y BASE
+   ========================================================================== */
+:root{
+  --bg:#0a0e1a;
+  --card:#0f172a;
+  --card2:#111d33;
+  --line:#1e3a5f;
+  --txt:#e2e8f0;
+  --mut:#94a3b8;
+  --acc:#38bdf8;
+  --acc2:#00d4ff;
+  --ok:#34d399;
+  --warn:#fbbf24;
+  --bad:#f87171;
+  --top:58px;
+  --max:1040px;
+  --shadow:0 10px 30px -12px rgba(0,0,0,.65);
+}
+html[data-theme="light"]{
+  --bg:#eef2f7;
+  --card:#ffffff;
+  --card2:#f6f9fd;
+  --line:#c7d3e3;
+  --txt:#0f172a;
+  --mut:#475569;
+  --acc:#0284c7;
+  --acc2:#0891b2;
+  --shadow:0 10px 30px -14px rgba(15,23,42,.28);
+}
+*,*::before,*::after{box-sizing:border-box}
+html{font-size:16px;-webkit-text-size-adjust:100%;scroll-behavior:smooth}
+body{
+  margin:0;
+  padding-top:var(--top);
+  background:var(--bg);
+  color:var(--txt);
+  font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  line-height:1.65;
+  overflow-x:hidden;
+  -webkit-font-smoothing:antialiased;
+}
+img,svg{max-width:100%}
+a{color:var(--acc)}
+h1,h2,h3,h4{line-height:1.25;letter-spacing:-.01em}
+h1{font-size:clamp(1.55rem,5vw,2.35rem);margin:.2em 0 .35em}
+h2{font-size:clamp(1.25rem,3.6vw,1.7rem);margin:2em 0 .6em}
+h3{font-size:clamp(1.05rem,2.8vw,1.25rem);margin:1.6em 0 .5em}
+h4{font-size:1rem;margin:1.2em 0 .4em;color:var(--acc)}
+p{margin:0 0 1em}
+ul,ol{margin:0 0 1em;padding-left:1.25em}
+li{margin:.3em 0}
+strong{color:var(--txt)}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.9em;background:rgba(56,189,248,.12);color:var(--acc);padding:.12em .4em;border-radius:5px}
+hr{border:0;border-top:1px solid var(--line);margin:2em 0}
+::selection{background:rgba(56,189,248,.32)}
+:focus-visible{outline:2px solid var(--acc);outline-offset:3px;border-radius:6px}
+
+/* ==========================================================================
+   BARRA DE PROGRESO
+   ========================================================================== */
+#pb{
+  position:fixed;top:0;left:0;height:3px;width:0%;
+  background:linear-gradient(90deg,var(--acc2),var(--acc),#6366f1);
+  z-index:60;transition:width .1s linear;
+}
+
+/* ==========================================================================
+   BARRA SUPERIOR FIJA
+   ========================================================================== */
+#nav{
+  position:fixed;top:0;left:0;right:0;height:var(--top);
+  display:flex;align-items:center;gap:8px;
+  padding:0 10px;
+  background:color-mix(in srgb,var(--bg) 88%,transparent);
+  backdrop-filter:blur(14px);
+  -webkit-backdrop-filter:blur(14px);
+  border-bottom:1px solid var(--line);
+  z-index:40;
+}
+.chip{
+  flex:0 0 auto;
+  display:inline-flex;align-items:center;justify-content:center;
+  min-height:42px;padding:.45rem .85rem;
+  font:inherit;font-size:.8rem;font-weight:600;letter-spacing:.02em;
+  color:var(--mut);
+  background:transparent;
+  border:1px solid var(--line);
+  border-radius:999px;
+  cursor:pointer;
+  white-space:nowrap;
+  transition:background .18s,color .18s,border-color .18s,transform .12s;
+  -webkit-tap-highlight-color:transparent;
+}
+.chip:hover{background:rgba(56,189,248,.09);color:var(--txt)}
+.chip:active{transform:scale(.97)}
+.chip.on{background:rgba(56,189,248,.16);border-color:var(--acc);color:var(--acc)}
+#mb{font-weight:700;padding-inline:.9rem}
+#chips{
+  flex:1 1 auto;display:flex;gap:8px;align-items:center;
+  overflow-x:auto;overflow-y:hidden;
+  scrollbar-width:none;-ms-overflow-style:none;
+  padding:2px 0;
+}
+#chips::-webkit-scrollbar{display:none}
+#sb{width:42px;padding:0;font-size:1rem}
+
+/* ==========================================================================
+   PANEL LATERAL DE ÍNDICE
+   ========================================================================== */
+#dr{
+  position:fixed;top:var(--top);left:0;bottom:0;
+  width:min(330px,88vw);
+  background:#0f172a;
+  border-right:1px solid #1e3a5f;
+  transform:translateX(-105%);
+  transition:transform .25s cubic-bezier(.4,0,.2,1);
+  z-index:25;
+  display:flex;flex-direction:column;
+  overflow:hidden;
+  box-shadow:12px 0 40px -20px rgba(0,0,0,.9);
+}
+#dr.o{transform:none}
+#drList{
+  flex:1 1 auto;overflow-y:auto;overscroll-behavior:contain;
+  padding:10px;
+  -webkit-overflow-scrolling:touch;
+}
+#drList a{
+  display:flex;align-items:center;
+  padding:12px;
+  min-height:44px;
+  border-radius:8px;
+  color:#e2e8f0;
+  font-size:.88rem;font-weight:500;line-height:1.35;
+  text-decoration:none;
+  cursor:pointer;
+  transition:background .15s,color .15s;
+}
+#drList a:hover{background:rgba(255,255,255,.05)}
+#drList a.on{background:rgba(0,212,255,.13);color:#00d4ff;font-weight:700}
+#drTools{
+  flex:0 0 auto;
+  border-top:1px solid #1e3a5f;
+  padding:10px;
+  display:grid;grid-template-columns:1fr 1fr;gap:8px;
+  background:#0b1220;
+}
+#drTools button{
+  min-height:44px;
+  display:inline-flex;align-items:center;justify-content:center;gap:6px;
+  font:inherit;font-size:.78rem;font-weight:600;
+  color:#cbd5e1;background:rgba(255,255,255,.04);
+  border:1px solid #1e3a5f;border-radius:9px;
+  cursor:pointer;transition:background .15s,color .15s;
+}
+#drTools button:hover{background:rgba(56,189,248,.14);color:#7dd3fc}
+#drTools button:focus-visible{outline:2px solid #38bdf8;outline-offset:2px}
+
+/* ==========================================================================
+   SECCIONES / PESTAÑAS
+   ========================================================================== */
+main{padding-top:0}
+main > section{
+  display:none;
+  padding:22px 16px 90px;
+  max-width:var(--max);
+  margin:0 auto;
+  animation:fadeUp .35s ease both;
+}
+main > section.on{display:block}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+
+.eyebrow{
+  display:inline-block;font-size:.7rem;font-weight:800;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--acc);margin-bottom:.4rem;
+}
+.lead{font-size:1.02rem;color:var(--mut);max-width:70ch}
+
+/* ==========================================================================
+   TARJETAS
+   ========================================================================== */
+.card{
+  background:var(--card);
+  border:1px solid var(--line);
+  border-radius:16px;
+  padding:18px;
+  margin:0 0 16px;
+  box-shadow:var(--shadow);
+}
+.card > :first-child{margin-top:0}
+.card > :last-child{margin-bottom:0}
+.grid{display:grid;gap:14px}
+@media(min-width:680px){
+  .grid.g2{grid-template-columns:repeat(2,1fr)}
+  .grid.g3{grid-template-columns:repeat(3,1fr)}
+}
+.mini{
+  background:var(--card2);border:1px solid var(--line);border-radius:13px;padding:15px;
+}
+.mini h4{margin:0 0 .4em;color:var(--acc);font-size:.95rem}
+.mini p{margin:0;font-size:.9rem;color:var(--mut)}
+
+.callout{
+  border-left:4px solid var(--acc);
+  background:rgba(56,189,248,.08);
+  border-radius:0 12px 12px 0;
+  padding:14px 16px;margin:16px 0;font-size:.94rem;
+}
+.callout.warn{border-left-color:var(--warn);background:rgba(251,191,36,.09)}
+.callout.bad{border-left-color:var(--bad);background:rgba(248,113,113,.09)}
+.callout.ok{border-left-color:var(--ok);background:rgba(52,211,153,.09)}
+.callout strong{color:var(--txt)}
+.callout > :last-child{margin-bottom:0}
+
+/* ==========================================================================
+   PASOS NUMERADOS
+   ========================================================================== */
+.steps{list-style:none;padding:0;margin:0;counter-reset:st}
+.steps > li{
+  position:relative;
+  padding:0 0 0 46px;
+  margin:0 0 18px;
+  counter-increment:st;
+}
+.steps > li::before{
+  content:counter(st);
+  position:absolute;left:0;top:0;
+  width:32px;height:32px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:.85rem;font-weight:800;color:#06121f;
+  background:linear-gradient(140deg,var(--acc),var(--acc2));
+  box-shadow:0 0 0 4px rgba(56,189,248,.12);
+}
+.steps > li strong{display:block;margin-bottom:.15em}
+.steps > li p{margin:0;font-size:.93rem;color:var(--mut)}
+.steps > li .res{
+  display:inline-block;margin-top:.45em;font-size:.82rem;font-weight:600;
+  color:var(--ok);background:rgba(52,211,153,.12);
+  border-radius:7px;padding:.2em .6em;
+}
+
+/* ==========================================================================
+   CÓDIGO / PROMPTS
+   ========================================================================== */
+.codeblk{position:relative;margin:12px 0 18px}
+.codeblk pre{
+  margin:0;
+  background:#060b14;
+  border:1px solid var(--line);
+  border-radius:12px;
+  padding:16px 16px 14px;
+  overflow-x:auto;
+  font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  font-size:.82rem;line-height:1.6;
+  color:#c9e6f5;
+  white-space:pre;
+  tab-size:2;
+}
+html[data-theme="light"] .codeblk pre{background:#0b1420;color:#d3ecf8}
+.cbtn{
+  position:absolute;top:8px;right:8px;
+  min-height:34px;padding:.3rem .75rem;
+  font:inherit;font-size:.7rem;font-weight:800;letter-spacing:.08em;
+  color:var(--acc);background:rgba(56,189,248,.12);
+  border:1px solid rgba(56,189,248,.35);border-radius:8px;
+  cursor:pointer;transition:background .15s,transform .1s;
+}
+.cbtn:hover{background:rgba(56,189,248,.24)}
+.cbtn:active{transform:scale(.95)}
+.cbtn.done{color:#06121f;background:var(--ok);border-color:var(--ok)}
+
+/* ==========================================================================
+   TABLAS
+   ========================================================================== */
+.tw{overflow-x:auto;-webkit-overflow-scrolling:touch;margin:14px 0;border-radius:12px;border:1px solid var(--line)}
+table{width:100%;border-collapse:collapse;font-size:.86rem;min-width:520px;background:var(--card)}
+th,td{padding:11px 13px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top}
+th{background:var(--card2);color:var(--acc);font-size:.76rem;text-transform:uppercase;letter-spacing:.06em;font-weight:800}
+tbody tr:last-child td{border-bottom:0}
+tbody tr:hover{background:rgba(56,189,248,.05)}
+
+/* ==========================================================================
+   DESPLEGABLES
+   ========================================================================== */
+details{
+  background:var(--card);
+  border:1px solid var(--line);
+  border-radius:12px;
+  margin:0 0 10px;
+  overflow:hidden;
+}
+details[open]{border-color:rgba(56,189,248,.45)}
+summary{
+  cursor:pointer;list-style:none;
+  padding:14px 44px 14px 16px;
+  position:relative;
+  font-weight:650;font-size:.92rem;
+  min-height:48px;display:flex;align-items:center;
+  transition:background .15s;
+}
+summary::-webkit-details-marker{display:none}
+summary:hover{background:rgba(56,189,248,.06)}
+summary::after{
+  content:"+";
+  position:absolute;right:14px;top:50%;transform:translateY(-50%);
+  font-size:1.15rem;font-weight:400;color:var(--acc);line-height:1;
+  transition:transform .22s;
+}
+details[open] summary::after{content:"−";transform:translateY(-50%) rotate(180deg)}
+.dbody{padding:0 16px 16px;font-size:.92rem;color:var(--mut);border-top:1px solid var(--line);padding-top:14px}
+.dbody > :first-child{margin-top:0}
+.dbody > :last-child{margin-bottom:0}
+.dbody strong{color:var(--txt)}
+
+/* ==========================================================================
+   CHECKLIST
+   ========================================================================== */
+.check{display:flex;align-items:flex-start;gap:11px;padding:10px 2px;min-height:44px;border-bottom:1px dashed var(--line)}
+.check:last-child{border-bottom:0}
+.check input{
+  flex:0 0 auto;appearance:none;-webkit-appearance:none;
+  width:22px;height:22px;margin:1px 0 0;
+  border:2px solid var(--line);border-radius:6px;background:var(--card2);
+  cursor:pointer;position:relative;transition:background .15s,border-color .15s;
+}
+.check input:checked{background:var(--acc);border-color:var(--acc)}
+.check input:checked::after{
+  content:"";position:absolute;left:6px;top:1px;
+  width:6px;height:11px;border:solid #06121f;border-width:0 2.5px 2.5px 0;
+  transform:rotate(43deg);
+}
+.check label{font-size:.92rem;cursor:pointer;color:var(--txt);line-height:1.5}
+.check input:checked + label{color:var(--mut);text-decoration:line-through;text-decoration-color:rgba(148,163,184,.5)}
+
+/* ==========================================================================
+   BOTONES
+   ========================================================================== */
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  min-height:46px;padding:.7rem 1.3rem;
+  font:inherit;font-size:.9rem;font-weight:700;
+  border-radius:11px;cursor:pointer;
+  border:1px solid var(--acc);
+  background:linear-gradient(140deg,var(--acc),var(--acc2));
+  color:#04121d;
+  transition:transform .12s,filter .18s,box-shadow .18s;
+  text-decoration:none;
+}
+.btn:hover{filter:brightness(1.08);box-shadow:0 8px 26px -12px var(--acc)}
+.btn:active{transform:scale(.97)}
+.btn.sec{
+  background:transparent;color:var(--acc);
+  border:1px solid var(--line);
+}
+.btn.sec:hover{background:rgba(56,189,248,.1);border-color:var(--acc);box-shadow:none}
+.btnrow{display:flex;flex-wrap:wrap;gap:10px;margin:18px 0}
+
+/* ==========================================================================
+   HERO SVG
+   ========================================================================== */
+.hero-wrap{
+  position:relative;
+  border-radius:18px;
+  overflow:hidden;
+  border:1px solid var(--line);
+  background:#060b14;
+  margin:0 0 22px;
+  box-shadow:var(--shadow);
+  aspect-ratio:800/620;
+  min-height:180px;
+}
+.hero-wrap svg{display:block;width:100%;height:100%}
+
+/* Animaciones del SVG */
+.heroSvg .amb{animation:breathe 7s ease-in-out infinite}
+.heroSvg .amb.a2{animation-duration:9s;animation-delay:-2s}
+.heroSvg .amb.a3{animation-duration:8s;animation-delay:-4s}
+@keyframes breathe{0%,100%{opacity:.55}50%{opacity:1}}
+
+.heroSvg .parts circle{animation:drift 7s ease-in-out infinite}
+@keyframes drift{
+  0%,100%{transform:translate(0,0);opacity:.25}
+  50%{transform:translate(6px,-14px);opacity:.85}
+}
+
+.heroSvg .wv{
+  transform-box:fill-box;transform-origin:center;
+  animation:ripple 3.2s cubic-bezier(.22,.61,.36,1) infinite;
+  opacity:0;
+}
+.heroSvg .wv2{animation-delay:1.05s}
+.heroSvg .wv3{animation-delay:2.1s}
+@keyframes ripple{
+  0%{transform:scale(.55);opacity:.75}
+  70%{opacity:.15}
+  100%{transform:scale(2.1);opacity:0}
+}
+
+.heroSvg .micG{animation:micBob 3.6s ease-in-out infinite}
+@keyframes micBob{0%,100%{transform:translate(170px,300px)}50%{transform:translate(170px,292px)}}
+
+.heroSvg .pulseCore{
+  transform-box:fill-box;transform-origin:center;
+  animation:corePulse 2.6s ease-in-out infinite;
+}
+@keyframes corePulse{0%,100%{transform:scale(1)}50%{transform:scale(1.12)}}
+
+.heroSvg .ping{
+  transform-box:fill-box;transform-origin:center;
+  animation:pingOut 2.6s ease-out infinite;
+}
+@keyframes pingOut{0%{transform:scale(.85);opacity:.9}100%{transform:scale(2.4);opacity:0}}
+
+.heroSvg .beam{
+  stroke-dasharray:7 9;
+  animation:dash 1.4s linear infinite;
+}
+@keyframes dash{to{stroke-dashoffset:-32}}
+
+.heroSvg .bar{
+  transform-box:fill-box;transform-origin:bottom center;
+  animation:eq 1.15s ease-in-out infinite alternate;
+}
+@keyframes eq{from{transform:scaleY(.22)}to{transform:scaleY(1)}}
+
+.heroSvg .dline{
+  transform-box:fill-box;transform-origin:left center;
+  animation:growIn 3.4s ease-in-out infinite;
+}
+.heroSvg .dline:nth-of-type(2){animation-delay:.25s}
+.heroSvg .dline:nth-of-type(3){animation-delay:.5s}
+.heroSvg .dline:nth-of-type(4){animation-delay:.75s}
+.heroSvg .dline:nth-of-type(5){animation-delay:1s}
+.heroSvg .dline:nth-of-type(6){animation-delay:1.25s}
+@keyframes growIn{0%,12%{transform:scaleX(.1);opacity:.35}45%,100%{transform:scaleX(1);opacity:1}}
+
+.heroSvg .tsChip{animation:bob 4s ease-in-out infinite}
+.heroSvg .tsChip.t2{animation-delay:-1.3s}
+.heroSvg .tsChip.t3{animation-delay:-2.6s}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
+
+.heroSvg .spark{animation:twinkle 2.8s ease-in-out infinite}
+.heroSvg .spark.s2{animation-delay:-.9s}
+.heroSvg .spark.s3{animation-delay:-1.8s}
+@keyframes twinkle{0%,100%{opacity:.15;transform:scale(.7)}50%{opacity:1;transform:scale(1.25)}}
+
+@media (prefers-reduced-motion:reduce){
+  .heroSvg *{animation:none!important;transition:none!important}
+  main > section{animation:none!important}
+  html{scroll-behavior:auto}
+}
+
+/* ==========================================================================
+   BUSCADOR
+   ========================================================================== */
+#so{
+  position:fixed;inset:0;z-index:70;
+  background:rgba(2,6,14,.82);
+  backdrop-filter:blur(6px);
+  display:none;
+  padding:70px 14px 20px;
+  overflow-y:auto;
+}
+#so.on{display:block}
+#soBox{
+  max-width:620px;margin:0 auto;
+  background:var(--card);border:1px solid var(--line);
+  border-radius:16px;padding:16px;
+  box-shadow:0 30px 80px -30px #000;
+}
+#soIn{
+  width:100%;min-height:48px;
+  padding:.7rem 1rem;
+  font:inherit;font-size:1rem;
+  color:var(--txt);background:var(--card2);
+  border:1px solid var(--line);border-radius:11px;
+}
+#soIn:focus{outline:none;border-color:var(--acc)}
+#soRes{list-style:none;margin:14px 0 0;padding:0;max-height:56vh;overflow-y:auto}
+#soRes li{margin:0 0 6px}
+#soRes button{
+  width:100%;text-align:left;min-height:48px;
+  padding:.65rem .85rem;font:inherit;font-size:.86rem;
+  color:var(--txt);background:var(--card2);
+  border:1px solid var(--line);border-radius:10px;cursor:pointer;
+  transition:background .15s,border-color .15s;
+}
+#soRes button:hover{background:rgba(56,189,248,.1);border-color:var(--acc)}
+#soRes .snip{display:block;color:var(--mut);font-size:.78rem;margin-top:2px;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#soRes .secName{color:var(--acc);font-weight:700;font-size:.72rem;letter-spacing:.05em;text-transform:uppercase}
+#soClose{
+  float:right;min-height:36px;padding:.3rem .8rem;
+  font:inherit;font-size:.8rem;font-weight:700;
+  color:var(--mut);background:transparent;border:1px solid var(--line);
+  border-radius:8px;cursor:pointer;
+}
+#soClose:hover{color:var(--acc);border-color:var(--acc)}
+
+/* ==========================================================================
+   VOLVER ARRIBA
+   ========================================================================== */
+#up{
+  position:fixed;right:14px;bottom:14px;
+  width:48px;height:48px;border-radius:50%;
+  display:none;align-items:center;justify-content:center;
+  font-size:1.15rem;
+  background:linear-gradient(140deg,var(--acc),var(--acc2));
+  color:#04121d;border:0;cursor:pointer;
+  box-shadow:0 10px 28px -10px var(--acc);
+  z-index:35;
+  transition:transform .15s,opacity .2s;
+}
+#up.on{display:flex}
+#up:active{transform:scale(.92)}
+
+/* ==========================================================================
+   CRÉDITOS
+   ========================================================================== */
+.author{
+  font-size:clamp(1.9rem,7vw,3rem);
+  font-weight:900;
+  letter-spacing:-.03em;
+  line-height:1.1;
+  margin:.15em 0 .1em;
+  background:linear-gradient(120deg,var(--acc),var(--acc2) 45%,#818cf8);
+  -webkit-background-clip:text;background-clip:text;
+  -webkit-text-fill-color:transparent;
+  text-align:center;
+}
+.authorRole{text-align:center;color:var(--mut);font-size:.85rem;letter-spacing:.18em;text-transform:uppercase;margin:0 0 1.4em}
+.meta{
+  display:grid;gap:10px;font-size:.86rem;
+  grid-template-columns:1fr;
+}
+@media(min-width:520px){.meta{grid-template-columns:1fr 1fr}}
+.meta div{
+  background:var(--card2);border:1px solid var(--line);border-radius:10px;padding:11px 13px;
+}
+.meta span{display:block;font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;color:var(--mut);margin-bottom:.15em}
+.meta b{font-weight:700;color:var(--txt);font-size:.94rem}
+
+/* ==========================================================================
+   UTILIDADES
+   ========================================================================== */
+.pill{
+  display:inline-block;font-size:.68rem;font-weight:800;letter-spacing:.07em;
+  text-transform:uppercase;padding:.22em .68em;border-radius:999px;
+  background:rgba(56,189,248,.14);color:var(--acc);border:1px solid rgba(56,189,248,.3);
+}
+.pill.ok{background:rgba(52,211,153,.14);color:var(--ok);border-color:rgba(52,211,153,.3)}
+.pill.warn{background:rgba(251,191,36,.14);color:var(--warn);border-color:rgba(251,191,36,.3)}
+.pill.bad{background:rgba(248,113,113,.14);color:var(--bad);border-color:rgba(248,113,113,.3)}
+.qcount{color:var(--mut);font-size:.82rem;font-weight:500;margin-left:.4em}
+
+/* ==========================================================================
+   IMPRESIÓN
+   ========================================================================== */
+@media print{
+  @page{size:A4 portrait;margin:14mm 12mm}
+  html,body{background:#fff!important;color:#000!important;font-size:10.5pt}
+  #nav,#dr,#up,#so,#pb,.cbtn,.btnrow,#sb{display:none!important}
+  body{padding-top:0!important}
+  main > section{
+    display:block!important;
+    page-break-before:auto;
+    padding:0 0 10mm!important;
+    max-width:none!important;
+    animation:none!important;
+    border-bottom:1px solid #ccc;
+    margin-bottom:8mm;
+  }
+  main > section::before{
+    content:attr(data-t);
+    display:block;font-size:13pt;font-weight:800;color:#000;
+    border-bottom:2px solid #000;padding-bottom:3mm;margin-bottom:5mm;
+  }
+  h1,h2,h3,h4{color:#000!important;page-break-after:avoid}
+  h2{font-size:12.5pt;margin-top:6mm}
+  h3{font-size:11pt}
+  p,li,td,th{color:#000!important}
+  .card,.mini,details,.tw,.callout{
+    background:#fff!important;border:1px solid #999!important;
+    box-shadow:none!important;page-break-inside:avoid;
+  }
+  .codeblk pre{
+    background:#f5f5f5!important;color:#000!important;
+    border:1px solid #999!important;white-space:pre-wrap!important;
+    word-break:break-word;font-size:8.5pt;
+  }
+  code{background:#eee!important;color:#000!important}
+  .hero-wrap{
+    border:1px solid #999!important;box-shadow:none!important;
+    page-break-inside:avoid;background:#0a0e1a!important;
+    aspect-ratio:800/620;
+  }
+  .heroSvg *{animation:none!important}
+  .author{-webkit-text-fill-color:#000!important;color:#000!important;background:none!important}
+  a{color:#000!important;text-decoration:underline}
+  .steps > li::before{background:#000!important;color:#fff!important;box-shadow:none!important}
+  .check input{border-color:#000!important}
+  .check input:checked{background:#000!important}
+  table{min-width:0!important;width:100%!important;font-size:8.5pt}
+  th{background:#eee!important;color:#000!important}
+  .tw{overflow:visible!important}
+  details{page-break-inside:avoid}
+  details > summary::after{display:none}
+  .dbody{color:#000!important}
+  .grid{display:block!important}
+  .mini{margin-bottom:4mm}
+}
+</style>
+</head>
+<body>
+
+<div id="pb" aria-hidden="true"></div>
+
+<!-- ===================== BARRA SUPERIOR ===================== -->
+<nav id="nav" aria-label="Navegación principal">
+  <button class="chip" id="mb" aria-label="Abrir índice" aria-expanded="false" aria-controls="dr">☰ Índice</button>
+  <div id="chips" role="tablist" aria-label="Secciones del tutorial">
+    <button class="chip on" role="tab" aria-selected="true">INICIO</button>
+    <button class="chip" role="tab" aria-selected="false">CONCEPTOS</button>
+    <button class="chip" role="tab" aria-selected="false">PROCEDIMIENTO</button>
+    <button class="chip" role="tab" aria-selected="false">PRÁCTICA</button>
+    <button class="chip" role="tab" aria-selected="false">33 Preguntas (Q&amp;A)</button>
+    <button class="chip" role="tab" aria-selected="false">ERRORES</button>
+    <button class="chip" role="tab" aria-selected="false">RESUMEN</button>
+    <button class="chip" role="tab" aria-selected="false">FUENTES</button>
+    <button class="chip" role="tab" aria-selected="false">CRÉDITOS</button>
+  </div>
+  <button class="chip" id="sb" aria-label="Buscar en el tutorial">🔍</button>
+</nav>
+
+<!-- ===================== PANEL DE ÍNDICE ===================== -->
+<div id="dr" aria-label="Índice de secciones">
+  <div id="drList"></div>
+  <div id="drTools">
+    <button type="button" id="fsMinus" aria-label="Reducir el tamaño de la letra">A− Letra</button>
+    <button type="button" id="fsPlus" aria-label="Aumentar el tamaño de la letra">A+ Letra</button>
+    <button type="button" id="themeBtn" aria-label="Cambiar entre tema oscuro y claro">◐ Tema</button>
+    <button type="button" id="printBtn" aria-label="Imprimir o guardar como PDF">⎙ PDF</button>
+    <button type="button" id="resetBtn" aria-label="Borrar el progreso guardado">↺ Progreso</button>
+    <button type="button" id="closeDr" aria-label="Cerrar el índice">✕ Cerrar</button>
+  </div>
+</div>
+
+<!-- ===================== BUSCADOR ===================== -->
+<div id="so" role="dialog" aria-modal="true" aria-label="Buscador interno">
+  <div id="soBox">
+    <button type="button" id="soClose" aria-label="Cerrar el buscador">Cerrar ✕</button>
+    <h3 style="margin:0 0 12px;font-size:1rem">Buscar en el tutorial</h3>
+    <input id="soIn" type="search" placeholder="Escribe: acta, prompt, Drive, timestamp…" autocomplete="off" aria-label="Término de búsqueda">
+    <ul id="soRes"></ul>
+  </div>
+</div>
+
+<button id="up" aria-label="Volver arriba">↑</button>
+
+<!-- ==========================================================================
+     TEMPLATE SVG (única fuente, se elimina del DOM al cargar)
+     ========================================================================== -->
+<template id="svgTpl">
+<svg class="heroSvg" viewBox="0 0 800 620" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Ilustración animada de Gemini Notebook: un micrófono captura la voz de una reunión, un núcleo de inteligencia artificial la procesa y de ella surge un documento con marcas de tiempo verificables.">
+  <defs>
+    <linearGradient id="bg__U__" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#070d18"/>
+      <stop offset="55%" stop-color="#0a1526"/>
+      <stop offset="100%" stop-color="#040910"/>
+    </linearGradient>
+    <radialGradient id="glow__U__" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#38bdf8" stop-opacity="0.55"/>
+      <stop offset="55%" stop-color="#38bdf8" stop-opacity="0.12"/>
+      <stop offset="100%" stop-color="#38bdf8" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="mic__U__" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#7dd3fc"/>
+      <stop offset="100%" stop-color="#0369a1"/>
+    </linearGradient>
+    <linearGradient id="core__U__" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#22d3ee"/>
+      <stop offset="50%" stop-color="#38bdf8"/>
+      <stop offset="100%" stop-color="#6366f1"/>
+    </linearGradient>
+    <linearGradient id="doc__U__" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#16283f"/>
+      <stop offset="100%" stop-color="#0a1424"/>
+    </linearGradient>
+    <linearGradient id="bar__U__" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#00d4ff"/>
+      <stop offset="100%" stop-color="#3b82f6"/>
+    </linearGradient>
+    <pattern id="grid__U__" width="100" height="100" patternUnits="userSpaceOnUse">
+      <path d="M100 0 H0 V100" fill="none" stroke="#1e3a5f" stroke-width="1" opacity="0.45"/>
+    </pattern>
+  </defs>
+
+  <!-- Fondo -->
+  <rect width="800" height="620" fill="url(#bg__U__)"/>
+  <rect width="800" height="620" fill="url(#grid__U__)" opacity="0.55"/>
+
+  <!-- Halos ambientales -->
+  <circle class="amb a1" cx="170" cy="300" r="190" fill="url(#glow__U__)"/>
+  <circle class="amb a2" cx="400" cy="248" r="215" fill="url(#glow__U__)"/>
+  <circle class="amb a3" cx="628" cy="300" r="185" fill="url(#glow__U__)"/>
+
+  <!-- Partículas -->
+  <g class="parts" fill="#7dd3fc">
+    <circle cx="64" cy="88" r="2" style="animation-delay:-0.2s"/>
+    <circle cx="142" cy="146" r="1.6" style="animation-delay:-1.4s"/>
+    <circle cx="98" cy="452" r="2.2" style="animation-delay:-2.6s"/>
+    <circle cx="212" cy="522" r="1.5" style="animation-delay:-3.8s"/>
+    <circle cx="330" cy="98" r="1.8" style="animation-delay:-0.9s"/>
+    <circle cx="404" cy="56" r="2.3" style="animation-delay:-2.1s"/>
+    <circle cx="486" cy="128" r="1.5" style="animation-delay:-3.3s"/>
+    <circle cx="560" cy="72" r="2" style="animation-delay:-4.5s"/>
+    <circle cx="676" cy="150" r="1.7" style="animation-delay:-1.7s"/>
+    <circle cx="742" cy="238" r="2.2" style="animation-delay:-2.9s"/>
+    <circle cx="718" cy="452" r="1.6" style="animation-delay:-4.1s"/>
+    <circle cx="606" cy="530" r="2" style="animation-delay:-0.5s"/>
+    <circle cx="470" cy="566" r="1.5" style="animation-delay:-1.9s"/>
+    <circle cx="300" cy="470" r="2.1" style="animation-delay:-3.1s"/>
+    <circle cx="46" cy="302" r="1.8" style="animation-delay:-4.3s"/>
+    <circle cx="756" cy="366" r="1.6" style="animation-delay:-2.3s"/>
+  </g>
+
+  <!-- Ondas del micrófono -->
+  <g fill="none" stroke="#38bdf8" stroke-width="2">
+    <circle class="wv wv1" cx="170" cy="300" r="64"/>
+    <circle class="wv wv2" cx="170" cy="300" r="64"/>
+    <circle class="wv wv3" cx="170" cy="300" r="64"/>
+  </g>
+
+  <!-- Micrófono -->
+  <g class="micG" transform="translate(170 300)">
+    <rect x="-25" y="-54" width="50" height="82" rx="25" fill="url(#mic__U__)"/>
+    <rect x="-9" y="-42" width="6" height="58" rx="3" fill="#e0f2fe" opacity="0.55"/>
+    <path d="M-38 6 Q0 58 38 6" fill="none" stroke="#38bdf8" stroke-width="6" stroke-linecap="round"/>
+    <line x1="0" y1="46" x2="0" y2="66" stroke="#38bdf8" stroke-width="6" stroke-linecap="round"/>
+    <line x1="-19" y1="66" x2="19" y2="66" stroke="#38bdf8" stroke-width="6" stroke-linecap="round"/>
+  </g>
+
+  <!-- Haz micrófono -> núcleo -->
+  <path class="beam" d="M244 300 C300 300 320 268 336 254" fill="none" stroke="#38bdf8" stroke-width="2" opacity="0.55"/>
+
+  <!-- Núcleo de IA -->
+  <g>
+    <polygon points="400,172 468,211 468,289 400,328 332,289 332,211" fill="none" stroke="#38bdf8" stroke-width="2" opacity="0.45">
+      <animateTransform attributeName="transform" type="rotate" from="0 400 250" to="360 400 250" dur="46s" repeatCount="indefinite"/>
+    </polygon>
+    <polygon points="400,198 445,224 445,276 400,302 355,276 355,224" fill="none" stroke="#00d4ff" stroke-width="1.5" opacity="0.7">
+      <animateTransform attributeName="transform" type="rotate" from="360 400 250" to="0 400 250" dur="30s" repeatCount="indefinite"/>
+    </polygon>
+    <circle class="ping" cx="400" cy="250" r="32" fill="none" stroke="#7dd3fc" stroke-width="1.5"/>
+    <circle class="pulseCore" cx="400" cy="250" r="30" fill="url(#core__U__)"/>
+    <circle cx="400" cy="250" r="11" fill="#e0f7ff" opacity="0.85"/>
+    <g>
+      <circle cx="400" cy="152" r="5" fill="#00d4ff">
+        <animateTransform attributeName="transform" type="rotate" from="0 400 250" to="360 400 250" dur="13s" repeatCount="indefinite"/>
+      </circle>
+    </g>
+    <g>
+      <circle cx="400" cy="348" r="4" fill="#818cf8">
+        <animateTransform attributeName="transform" type="rotate" from="360 400 250" to="0 400 250" dur="19s" repeatCount="indefinite"/>
+      </circle>
+    </g>
+  </g>
+
+  <!-- Haz núcleo -> documento -->
+  <path class="beam" d="M466 254 C500 268 512 292 546 296" fill="none" stroke="#00d4ff" stroke-width="2" opacity="0.55"/>
+
+  <!-- Documento con marcas de tiempo -->
+  <g transform="translate(628 296)">
+    <rect x="-74" y="-106" width="148" height="212" rx="16" fill="url(#doc__U__)" stroke="#1e3a5f" stroke-width="2"/>
+    <rect class="dline" x="-52" y="-82" width="62" height="9" rx="4.5" fill="#38bdf8"/>
+    <rect class="dline" x="-52" y="-56" width="102" height="7" rx="3.5" fill="#334155"/>
+    <rect class="dline" x="-52" y="-40" width="86" height="7" rx="3.5" fill="#334155"/>
+    <rect class="dline" x="-52" y="-24" width="96" height="7" rx="3.5" fill="#334155"/>
+    <rect class="dline" x="-52" y="-8" width="72" height="7" rx="3.5" fill="#334155"/>
+    <rect class="dline" x="-52" y="8" width="90" height="7" rx="3.5" fill="#334155"/>
+
+    <g class="tsChip t1" transform="translate(-52 38)">
+      <rect width="58" height="20" rx="10" fill="#00d4ff" opacity="0.18"/>
+      <text x="29" y="14" font-size="11" text-anchor="middle" fill="#7dd3fc" font-family="ui-monospace,Menlo,Consolas,monospace">12:04</text>
+    </g>
+    <g class="tsChip t2" transform="translate(-52 66)">
+      <rect width="58" height="20" rx="10" fill="#00d4ff" opacity="0.18"/>
+      <text x="29" y="14" font-size="11" text-anchor="middle" fill="#7dd3fc" font-family="ui-monospace,Menlo,Consolas,monospace">38:22</text>
+    </g>
+  </g>
+
+  <!-- Destellos -->
+  <g fill="#e0f7ff">
+    <circle class="spark" cx="300" cy="196" r="2.6"/>
+    <circle class="spark s2" cx="514" cy="372" r="2.2"/>
+    <circle class="spark s3" cx="712" cy="176" r="2.4"/>
+  </g>
+
+  <!-- Ecualizador inferior -->
+  <g fill="url(#bar__U__)">
+    <rect class="bar" x="90"  y="486" width="8" height="54" rx="4" style="animation-delay:-0.05s"/>
+    <rect class="bar" x="116" y="500" width="8" height="40" rx="4" style="animation-delay:-0.42s"/>
+    <rect class="bar" x="142" y="470" width="8" height="70" rx="4" style="animation-delay:-0.81s"/>
+    <rect class="bar" x="168" y="492" width="8" height="48" rx="4" style="animation-delay:-0.18s"/>
+    <rect class="bar" x="194" y="458" width="8" height="82" rx="4" style="animation-delay:-0.64s"/>
+    <rect class="bar" x="220" y="500" width="8" height="40" rx="4" style="animation-delay:-1.02s"/>
+    <rect class="bar" x="246" y="480" width="8" height="60" rx="4" style="animation-delay:-0.27s"/>
+    <rect class="bar" x="272" y="464" width="8" height="76" rx="4" style="animation-delay:-0.73s"/>
+    <rect class="bar" x="298" y="496" width="8" height="44" rx="4" style="animation-delay:-1.11s"/>
+    <rect class="bar" x="324" y="472" width="8" height="68" rx="4" style="animation-delay:-0.36s"/>
+    <rect class="bar" x="350" y="452" width="8" height="88" rx="4" style="animation-delay:-0.88s"/>
+    <rect class="bar" x="376" y="490" width="8" height="50" rx="4" style="animation-delay:-0.12s"/>
+    <rect class="bar" x="402" y="468" width="8" height="72" rx="4" style="animation-delay:-0.55s"/>
+    <rect class="bar" x="428" y="498" width="8" height="42" rx="4" style="animation-delay:-0.95s"/>
+    <rect class="bar" x="454" y="462" width="8" height="78" rx="4" style="animation-delay:-0.22s"/>
+    <rect class="bar" x="480" y="484" width="8" height="56" rx="4" style="animation-delay:-0.68s"/>
+    <rect class="bar" x="506" y="506" width="8" height="34" rx="4" style="animation-delay:-1.06s"/>
+    <rect class="bar" x="532" y="474" width="8" height="66" rx="4" style="animation-delay:-0.31s"/>
+    <rect class="bar" x="558" y="492" width="8" height="48" rx="4" style="animation-delay:-0.77s"/>
+    <rect class="bar" x="584" y="460" width="8" height="80" rx="4" style="animation-delay:-0.44s"/>
+    <rect class="bar" x="610" y="488" width="8" height="52" rx="4" style="animation-delay:-0.91s"/>
+    <rect class="bar" x="636" y="502" width="8" height="38" rx="4" style="animation-delay:-0.16s"/>
+    <rect class="bar" x="662" y="478" width="8" height="62" rx="4" style="animation-delay:-0.59s"/>
+    <rect class="bar" x="688" y="494" width="8" height="46" rx="4" style="animation-delay:-1.14s"/>
+  </g>
+</svg>
+</template>
+
+<!-- ==========================================================================
+     CONTENIDO
+     ========================================================================== -->
+<main>
+
+<!-- ══════════════════════════ 0 · INICIO ══════════════════════════ -->
+<section class="on" data-t="INICIO">
+  <div class="hero-wrap" id="svgHome"></div>
+
+  <span class="eyebrow">Manual maestro · Nivel 0 a profesional</span>
+  <h1>Gemini Notebook: grabaciones, reuniones y diario personal</h1>
+  <p class="lead">
+    Guía completa, paso a paso y sin conocimientos previos, para grabar audio directamente dentro de
+    Gemini Notebook, transcribirlo con inteligencia artificial y convertirlo en actas, apuntes, informes
+    y reflexiones personales con citas exactas al segundo.
+  </p>
+
+  <div class="btnrow">
+    <button class="btn sec" id="ix">☰ Ver índice</button>
+    <button class="btn" data-goto="2">Empezar el procedimiento →</button>
+  </div>
+
+  <div class="grid g3">
+    <div class="mini">
+      <h4>🎙️ Graba dentro de la app</h4>
+      <p>Un botón de micrófono nativo, hasta 60 minutos por grabación, sin dispositivos externos ni suscripciones.</p>
+    </div>
+    <div class="mini">
+      <h4>⏱️ Citas al segundo</h4>
+      <p>Cada afirmación enlaza al minuto y segundo exactos donde se dijo. Puedes verificar todo con un clic.</p>
+    </div>
+    <div class="mini">
+      <h4>🧠 Solo con tus fuentes</h4>
+      <p>La IA responde únicamente a partir de los audios y documentos que tú subes a cada cuaderno.</p>
+    </div>
+  </div>
+
+  <h2>Qué es, para qué sirve y por qué importa</h2>
+
+  <div class="card">
+    <h3 style="margin-top:0">Qué es</h3>
+    <p>
+      <strong>Gemini Notebook</strong> (antes llamado NotebookLM) es un entorno de trabajo impulsado por
+      inteligencia artificial que procesa y sintetiza información. A diferencia de un chat convencional,
+      trabaja exclusivamente delimitado por las <strong>fuentes</strong> que tú decides subir a cada cuaderno:
+      documentos PDF, archivos de texto, enlaces web, vídeos de YouTube y —esto es lo nuevo— archivos de audio.
+    </p>
+    <p>
+      La novedad principal es un <strong>botón de micrófono nativo</strong> dentro de la sección
+      «Añadir fuente». Permite grabar voz en directo, hasta una hora continua por grabación, desde el móvil
+      o desde la versión web. El audio entra automáticamente como una fuente más del cuaderno: se transcribe
+      y se procesa para generar actas, resúmenes, guías de estudio o análisis personales.
+    </p>
+  </div>
+
+  <div class="card">
+    <h3 style="margin-top:0">Para qué sirve</h3>
+    <ul>
+      <li><strong>Reuniones de trabajo:</strong> actas automáticas con acuerdos, responsables y fechas.</li>
+      <li><strong>Clases y estudios:</strong> apuntes estructurados y baterías de preguntas de examen.</li>
+      <li><strong>Diario personal:</strong> reflexión diaria con detección de patrones a lo largo del mes.</li>
+      <li><strong>Entrevistas y llamadas:</strong> separación entre hechos, opiniones y compromisos.</li>
+      <li><strong>Ideas sueltas:</strong> notas de voz dispersas convertidas en un plan ejecutable.</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h3 style="margin-top:0">Por qué importa</h3>
+    <p>
+      Hasta hace poco, transcribir una reunión exigía comprar hardware especializado (como Plaud Note) o
+      pagar suscripciones mensuales, y después exportar el audio a mano desde una tarjeta SD o una app de
+      terceros. Gemini Notebook elimina esa cadena completa: <strong>grabas, y el audio ya está dentro del
+      flujo de trabajo</strong>, vinculado a citas temporales verificables.
+    </p>
+    <div class="callout">
+      <strong>La idea en una frase:</strong> grabas una vez, y la IA te devuelve un documento estructurado
+      en el que cada frase puede rastrearse hasta el segundo exacto en que se pronunció.
+    </div>
+  </div>
+
+  <h2>Guía rápida de 5 pasos</h2>
+  <ol class="steps">
+    <li>
+      <strong>Crea un cuaderno</strong>
+      <p>Uno por temática: reuniones, clases o diario personal. No los mezcles.</p>
+      <span class="res">Resultado: espacio de trabajo vacío y aislado</span>
+    </li>
+    <li>
+      <strong>Abre «Añadir fuente → Grabadora»</strong>
+      <p>Concede permisos de micrófono la primera vez.</p>
+      <span class="res">Resultado: el botón de grabación queda listo</span>
+    </li>
+    <li>
+      <strong>Graba (máximo 60 min)</strong>
+      <p>Avisa antes a los presentes. Si la sesión es más larga, crea una segunda fuente.</p>
+      <span class="res">Resultado: audio transcrito y añadido como fuente</span>
+    </li>
+    <li>
+      <strong>Configura el chat o genera un informe</strong>
+      <p>Elige una de las tres modalidades de uso y pega el prompt correspondiente.</p>
+      <span class="res">Resultado: acta, apuntes o balance listos para revisar</span>
+    </li>
+    <li>
+      <strong>Verifica las citas</strong>
+      <p>Pulsa los números de cita y escucha el audio original antes de enviar nada.</p>
+      <span class="res">Resultado: documento validado por una persona</span>
+    </li>
+  </ol>
+
+  <div class="callout warn">
+    <strong>Antes de grabar a otras personas:</strong> informa siempre en voz alta y obtén su consentimiento.
+    Es un requisito legal y ético, no una recomendación opcional.
+  </div>
+
+  <div class="btnrow">
+    <button class="btn" data-goto="1">Ver los conceptos →</button>
+    <button class="btn sec" data-goto="4">Ir a las 33 preguntas</button>
+  </div>
+</section>
+
+<!-- ══════════════════════════ 1 · CONCEPTOS ══════════════════════════ -->
+<section data-t="CONCEPTOS">
+  <span class="eyebrow">Nivel 0 · Fundamentos</span>
+  <h2 style="margin-top:.2em">Conceptos, requisitos y límites</h2>
+  <p class="lead">Antes de tocar ningún botón, conviene tener claro qué piezas componen el sistema y qué puedes esperar de ellas.</p>
+
+  <h3>Requisitos de hardware y software</h3>
+  <div class="card">
+    <p>No se necesitan equipos avanzados. Los mínimos son:</p>
+    <ul>
+      <li><strong>Dispositivos soportados:</strong> smartphone Android o iOS con micrófono funcional, o navegador de escritorio (Chrome, Firefox, Edge, Safari).</li>
+      <li><strong>Conexión a Internet:</strong> necesaria para sincronizar el audio y procesar las transcripciones en la nube.</li>
+      <li><strong>Aplicación o navegador actualizados:</strong> en móvil, la app de Gemini Notebook debe estar en su versión más reciente desde Google Play o App Store.</li>
+    </ul>
+    <div class="callout ok">
+      <strong>Buena noticia:</strong> la función de grabación y el uso de prompts personalizados funcionan
+      exactamente igual en cuentas gratuitas de Google que en cuentas corporativas de Google Workspace.
+    </div>
+  </div>
+
+  <h3>Dispositivos externos frente a la grabación nativa</h3>
+  <p>Hasta la llegada de esta función, los profesionales dependían de grabadoras físicas o de hardware
+  magnetizado para teléfonos, como Plaud Note, que transcriben audio previo pago del dispositivo y de sus
+  suscripciones. La comparación es clara:</p>
+
+  <div class="tw">
+    <table>
+      <thead>
+        <tr><th>Aspecto</th><th>Hardware externo (ej. Plaud Note)</th><th>Grabación nativa en Gemini Notebook</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Coste</td><td>Compra del dispositivo + suscripción</td><td>Integrado sin coste directo para el usuario</td></tr>
+        <tr><td>Integración</td><td>Requiere exportar desde tarjeta SD o app de terceros</td><td>La grabación entra en el flujo del cuaderno al instante</td></tr>
+        <tr><td>Trazabilidad</td><td>Transcripción sin vínculo interactivo al audio</td><td>Cada fragmento resumido se vincula a la marca de tiempo exacta</td></tr>
+        <tr><td>Dispositivos</td><td>Un aparato más que llevar y cargar</td><td>Tu propio móvil o el navegador</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>Cuenta gratuita frente a cuentas Workspace</h3>
+  <div class="tw">
+    <table>
+      <thead>
+        <tr><th>Elemento</th><th>Cuenta gratuita</th><th>Cuenta Google Workspace</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Botón de grabación</td><td>Sí</td><td>Sí</td></tr>
+        <tr><td>Prompts personalizados</td><td>Sí</td><td>Sí</td></tr>
+        <tr><td>Cuota de almacenamiento</td><td>Limitada</td><td>Ampliada según el plan</td></tr>
+        <tr><td>Número de cuadernos</td><td>Limitado</td><td>Mayor</td></tr>
+        <tr><td>Fuentes simultáneas por cuaderno</td><td>Limitado</td><td>Mayor</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p style="font-size:.86rem;color:var(--mut)">
+    Las diferencias entre tipos de cuenta afectan únicamente a las cuotas máximas de almacenamiento, al número
+    total de cuadernos permitidos y al almacenamiento simultáneo de fuentes por cuaderno.
+  </p>
+
+  <h3>Vocabulario imprescindible</h3>
+  <p>Estos siete términos aparecen continuamente en el resto del tutorial. Despliega cada uno para ver su definición.</p>
+
+  <details>
+    <summary>Cuaderno (Notebook)</summary>
+    <div class="dbody">Espacio de trabajo aislado en Gemini Notebook que agrupa fuentes específicas y las conversaciones del chat. Lo recomendable es crear un cuaderno independiente para cada temática o proyecto: no mezcles grabaciones de reuniones de trabajo con apuntes universitarios ni con diarios personales.</div>
+  </details>
+
+  <details>
+    <summary>Fuentes (Sources)</summary>
+    <div class="dbody">Documentos, audios, páginas web o vídeos añadidos al cuaderno para delimitar la base de conocimiento de la IA. La inteligencia artificial no responde con conocimiento general: responde sobre tus fuentes.</div>
+  </details>
+
+  <details>
+    <summary>Prompt</summary>
+    <div class="dbody">Instrucción escrita redactada para guiar el comportamiento, el estilo y el formato de respuesta del modelo de inteligencia artificial. Un buen prompt dice qué hacer, cómo hacerlo y qué no hacer.</div>
+  </details>
+
+  <details>
+    <summary>Prompt persistente</summary>
+    <div class="dbody">Configuración guardada en la opción <code>Configurar chat → Personalizado</code> que define la «personalidad» constante del cuaderno. Afecta a todas las preguntas que hagas después en ese cuaderno.</div>
+  </details>
+
+  <details>
+    <summary>Informe (Report)</summary>
+    <div class="dbody">Artefacto o documento extenso y permanente generado mediante un prompt específico en el panel lateral derecho. A diferencia del chat, el informe queda almacenado como nota independiente dentro del cuaderno.</div>
+  </details>
+
+  <details>
+    <summary>Cadena de citas (Timestamp / Marca de tiempo)</summary>
+    <div class="dbody">Enlace numérico interactivo generado por la IA que remite al minuto y segundo exactos de la grabación. Al pulsarlo, la plataforma abre el reproductor y posiciona la reproducción en ese instante preciso.</div>
+  </details>
+
+  <details>
+    <summary>Acta de reunión</summary>
+    <div class="dbody">Documento formal que sintetiza los puntos tratados, los compromisos adquiridos y los responsables asignados durante un encuentro.</div>
+  </details>
+
+  <div class="callout">
+    <strong>Regla de oro del etiquetado:</strong> si al mirar un cuaderno no sabes qué contiene en menos de tres
+    segundos, el nombre está mal puesto. «Reuniones de Operaciones 2026» funciona; «Notas» no.
+  </div>
+
+  <div class="btnrow">
+    <button class="btn" data-goto="2">Ir al procedimiento →</button>
+    <button class="btn sec" data-goto="5">Ver los errores frecuentes</button>
+  </div>
+</section>
+
+<!-- ══════════════════════════ 2 · PROCEDIMIENTO ══════════════════════════ -->
+<section data-t="PROCEDIMIENTO">
+  <span class="eyebrow">Nivel principiante e intermedio · Paso a paso</span>
+  <h2 style="margin-top:.2em">Procedimiento completo</h2>
+  <p class="lead">
+    Desde crear el primer cuaderno hasta generar actas verificables. Cada bloque incluye objetivo, pasos
+    numerados, resultado esperado y el prompt listo para copiar.
+  </p>
+
+  <h3>1. Crear tu primer cuaderno de trabajo</h3>
+  <div class="card">
+    <p><strong>Objetivo:</strong> tener un espacio aislado donde la IA solo vea lo que tú decidas.</p>
+    <ol class="steps">
+      <li><strong>Abre Gemini Notebook</strong><p>En el navegador web o en la app móvil.</p></li>
+      <li><strong>Inicia sesión con tu cuenta de Google</strong><p>La misma que usarás para Google Drive.</p></li>
+      <li><strong>Pulsa «Nuevo cuaderno»</strong><p>En móvil es el icono «+» de la pantalla principal.</p></li>
+      <li><strong>Asigna un nombre claro y específico</strong><p>Por ejemplo: <code>Reuniones de Equipo 2026</code>, <code>Clases de Historia</code> o <code>Diario Personal Estoico</code>.</p>
+        <span class="res">Resultado: cuaderno creado y listo para recibir fuentes</span>
+      </li>
+    </ol>
+    <div class="callout warn">
+      <strong>Consejo importante:</strong> crea un cuaderno independiente para cada temática o proyecto.
+      Mezclar reuniones de trabajo con apuntes universitarios y diarios personales degrada la calidad de las
+      respuestas y complica la privacidad.
+    </div>
+  </div>
+
+  <h3>2. Activar el botón de micrófono</h3>
+  <div class="card">
+    <p><strong>Objetivo:</strong> localizar y poner en marcha la grabadora integrada.</p>
+    <ol class="steps">
+      <li><strong>Ve al panel izquierdo «Fuentes»</strong><p>Es la columna donde se acumulan los documentos del cuaderno.</p></li>
+      <li><strong>Pulsa «Añadir fuente»</strong><p>Se despliega el menú de tipos de fuente disponibles.</p></li>
+      <li><strong>Selecciona «Grabadora»</strong><p>Aparece con un icono de micrófono, junto a PDF, Google Docs, URL y YouTube.</p></li>
+      <li><strong>Concede permisos de micrófono</strong><p>El navegador o el sistema operativo lo pedirán la primera vez.</p></li>
+      <li><strong>Pulsa iniciar cuando empiece la conversación</strong><p>No antes: perderás minutos de cuota en silencio.</p>
+        <span class="res">Resultado: grabación en curso con contador de tiempo visible</span>
+      </li>
+    </ol>
+  </div>
+
+  <h3>3. Plan de contingencia: grabación externa y carga manual</h3>
+  <div class="card">
+    <p><strong>Objetivo:</strong> usar la plataforma aunque el botón del micrófono todavía no haya llegado a tu dispositivo.</p>
+    <p>La actualización se despliega progresivamente por regiones, así que es normal que aún no lo veas. La solución es idéntica en resultado:</p>
+    <ol class="steps">
+      <li><strong>Abre la grabadora de voz de tu móvil</strong><p>La app predeterminada de Android o iOS sirve perfectamente.</p></li>
+      <li><strong>Graba la reunión o reflexión de forma habitual</strong><p>No necesitas ninguna app especial.</p></li>
+      <li><strong>Guarda el archivo en tu dispositivo</strong><p>Formatos soportados: MP3, WAV, M4A y AAC.</p></li>
+      <li><strong>En Gemini Notebook elige «Añadir fuente → Subir archivo»</strong><p>Selecciona el archivo de audio desde el explorador de archivos.</p>
+        <span class="res">Resultado: el sistema procesa la fuente igual que una grabación directa</span>
+      </li>
+    </ol>
+  </div>
+
+  <h3>4. Conectar Google Drive</h3>
+  <div class="card">
+    <p><strong>Objetivo:</strong> incorporar documentos y audios que ya tienes guardados en la nube.</p>
+    <ol class="steps">
+      <li><strong>En el panel de fuentes, pulsa «Añadir fuente → Google Drive»</strong><p>Se abrirá el selector de archivos de tu unidad.</p></li>
+      <li><strong>Autoriza el acceso a tu unidad</strong><p>Solo la primera vez; después queda vinculado.</p></li>
+      <li><strong>Selecciona documentos, hojas de cálculo o archivos de audio</strong><p>Enriquecen el contexto de las grabaciones con material previo.</p>
+        <span class="res">Resultado: fuentes de Drive disponibles junto al audio</span>
+      </li>
+    </ol>
+  </div>
+
+  <h3>Flujo de trabajo de la grabación directa</h3>
+  <div class="card">
+    <ul>
+      <li><strong>Duración máxima:</strong> cada sesión continua permite hasta <strong>1 hora (60 minutos)</strong>. Si la reunión dura más, detén la grabación y pulsa de nuevo iniciar para crear una segunda fuente.</li>
+      <li><strong>Control de pausa y parada:</strong> durante la grabación se muestra un contador de tiempo. Al finalizar, pulsa <strong>Detener</strong>. La grabación se procesa y se añade con una etiqueta temporal (por ejemplo, <code>Grabación 28 oct</code>).</li>
+      <li><strong>Consentimiento:</strong> avisa en voz alta antes de pulsar el botón. Es obligatorio, no opcional.</li>
+    </ul>
+  </div>
+
+  <h2>Las tres modalidades de uso</h2>
+  <p>Cada modalidad resuelve un problema distinto. No son excluyentes: puedes usar las tres en el mismo cuaderno.</p>
+
+  <div class="tw">
+    <table>
+      <thead>
+        <tr><th>Modalidad</th><th>Dónde se configura</th><th>Qué produce</th><th>Cuándo usarla</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>1 · Chat persistente</strong></td>
+          <td><code>Configurar chat → Personalizado</code></td>
+          <td>Un comportamiento constante para todas tus preguntas</td>
+          <td>Cuando vas a interrogar el cuaderno muchas veces con el mismo rol</td>
+        </tr>
+        <tr>
+          <td><strong>2 · Informes</strong></td>
+          <td><code>Informes → Crear el tuyo</code></td>
+          <td>Un documento estructurado y permanente</td>
+          <td>Cuando necesitas un entregable formal: acta, apuntes, correo</td>
+        </tr>
+        <tr>
+          <td><strong>3 · Consultas directas</strong></td>
+          <td>Barra de chat</td>
+          <td>Una respuesta puntual</td>
+          <td>Cuando tienes una duda concreta sobre un momento del audio</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>Modalidad 1 · Configuración persistente del chat</h3>
+  <div class="card">
+    <p><strong>Objetivo:</strong> definir la «personalidad» permanente del cuaderno ante cualquier pregunta.</p>
+    <ol class="steps">
+      <li><strong>Abre tu cuaderno</strong><p>El que corresponda a la temática que vas a tratar.</p></li>
+      <li><strong>Abre la opción «Configurar chat»</strong><p>Habitualmente en la parte superior del panel de chat.</p></li>
+      <li><strong>Selecciona «Personalizado»</strong><p>Aparecerá un campo de texto libre.</p></li>
+      <li><strong>Pega el prompt asignado</strong><p>Por ejemplo, el de <em>Secretario de reuniones</em> o el de <em>Profesor que examina</em>.</p></li>
+      <li><strong>Guarda los cambios</strong><p>A partir de ese momento, cada consulta responderá siguiendo estrictamente las reglas configuradas.</p>
+        <span class="res">Resultado: rol persistente activo en todo el cuaderno</span>
+      </li>
+    </ol>
+  </div>
+
+  <h3>Modalidad 2 · Generación de informes estructurados</h3>
+  <div class="card">
+    <p><strong>Objetivo:</strong> crear documentos formales que quedan almacenados como artefactos de notas permanentes.</p>
+    <ol class="steps">
+      <li><strong>Navega hasta la sección «Informes»</strong><p>En el panel lateral derecho del cuaderno.</p></li>
+      <li><strong>Pulsa «Crear el tuyo»</strong><p>También aparece como <em>Informe personalizado</em>.</p></li>
+      <li><strong>Pega el prompt diseñado para informes</strong><p>Por ejemplo, el de <em>Acta de reunión</em> o el de <em>Apuntes de clase</em>.</p></li>
+      <li><strong>Pulsa «Generar»</strong><p>El sistema procesa todas las fuentes de audio del cuaderno.</p>
+        <span class="res">Resultado: documento independiente listo para revisar y exportar</span>
+      </li>
+    </ol>
+  </div>
+
+  <h3>Modalidad 3 · Consultas directas en tiempo real</h3>
+  <div class="card">
+    <p><strong>Objetivo:</strong> resolver una duda puntual sin generar un documento completo.</p>
+    <p>Escribe directamente en la barra del chat. Ejemplos que funcionan muy bien:</p>
+    <ul>
+      <li>«¿En qué momento se habló del presupuesto para el proyecto X?»</li>
+      <li>«¿Quién asumió la responsabilidad del informe de renuncias?»</li>
+      <li>«Hazme un resumen de tres frases sobre el audio de anoche.»</li>
+      <li>«Revisa del minuto 12 al 18 y dime qué se decidió sobre el proveedor.»</li>
+    </ul>
+  </div>
+
+  <h3>El sistema de citas temporales</h3>
+  <div class="card">
+    <p>Es la ventaja diferencial de Gemini Notebook frente a otros modelos, y conviene entenderla bien:</p>
+    <ul>
+      <li>Cada respuesta generada incluye <strong>números de cita interactivos</strong>.</li>
+      <li>Al pulsar sobre el número de cita, la plataforma abre el reproductor de audio de la fuente correspondiente.</li>
+      <li>La reproducción se posiciona en el <strong>minuto y segundo exactos</strong> en que el participante pronunció esas palabras.</li>
+    </ul>
+    <div class="callout ok">
+      <strong>Para qué sirve en la práctica:</strong> puedes validar cualquier acuerdo, fecha o responsable
+      escuchando la voz original en dos segundos. Es tu principal defensa contra las alucinaciones de la IA.
+    </div>
+  </div>
+
+  <h2>Biblioteca de 15 prompts listos para copiar</h2>
+  <p class="lead">Cada bloque tiene su botón COPIAR. Pégalo tal cual en la ubicación indicada.</p>
+
+  <h3>Diario estoico y reflexión personal</h3>
+
+  <h4>Prompt 1.1 · Diario Estoico <span class="pill">Chat persistente</span></h4>
+  <p style="font-size:.88rem;color:var(--mut)">Ubicación: <code>Configurar chat → Personalizado</code>. Define el tono del cuaderno para procesar audios de diario nocturno de dos minutos bajo principios estoicos.</p>
+  <div class="codeblk">
+<pre>Eres mi compañero de diario estoico. Cada entrada es un audio mío de dos minutos al final del día.
+Cuando te pregunte, sepárame siempre tres cosas: lo que fue bien, lo que fue mal y lo que puedo mejorar mañana.
+Distingue lo que dependía de mí de lo que no dependía de mí, y céntrate en lo primero.
+Habla claro y sin adornos, sin frases de autoayuda. Cita la entrada y el día de cada cosa.
+No des consejos médicos ni psicológicos: si algo te parece serio, dime que lo hable con una persona.</pre>
+    <button class="cbtn" type="button">COPIAR</button>
+  </div>
+
+  <h4>Prompt 1.2 · Revisión Estoica del Mes <span class="pill">Informe</span></h4>
+  <p style="font-size:.88rem;color:var(--mut)">Ubicación: <code>Informes → Crear el tuyo</code>. Ejecuta una auditoría completa del mes analizando tendencias, errores recurrentes y áreas de enfoque.</p>
+  <div class="codeblk">
+<pre>Lee todas las entradas de mi diario de este mes y haz una revisión con estas partes:
+1. Lo que se repite: temas, preocupaciones o situaciones que salen en varios días.
+2. Errores que vuelven: lo que hice mal más de una vez.
+3. Aciertos: lo que fue bien y por qué.
+4. Lo que dije que haría y no he hecho.
+5. Lo que dependía de mí y lo que no: dónde gasté energía en cosas que no podía cambiar.
+6. Una sola cosa que cambiar el mes que viene.
+Cita el día de cada punto. Tono directo y breve.</pre>
+    <button class="cbtn" type="button">COPIAR</button>
+  </div>
+
+  <h4>Prompt 1.3 · La Pregunta de Cada Noche <span class="pill">Chat</span></h4>
+  <p style="font-size:.88rem;color:var(--mut)">Ubicación: barra de chat diaria. Devuelve un balance sintético en tres frases justo después de grabar la entrada nocturna.</p>
+  <div class="codeblk">
+<pre>Con lo que he contado hoy: ¿qué hice que dependía de mí y salió bien, qué me ha afectado que no dependía de mí y qué haré mañana distinto? Tres frases, una por cosa.</pre>
+    <button class="cbtn" type="button">COPIAR</button>
+  </div>
+
+  <h3>Configuración persistente del chat</h3>
+
+  <h4>Prompt 2.1 · Secretario de Reuniones <span class="pill">Chat persistente</span></h4>
+  <p style="font-size:.88rem;color:var(--mut)">Ubicación: <code>Configurar chat → Personalizado</code>. Asume el rol de un secretario riguroso para cuadernos de reuniones corporativas.</p>
+  <div class="codeblk">
+<pre>Eres el secretario de estas reuniones.
+Respondes solo con lo que se dijo en las grabaciones y citas el momento exacto.
+Cuando te pregunte por un acuerdo, di quién lo propuso, quién se encarga y para cuándo.
+Si algo no quedó claro o nadie lo asumió, dilo tal cual. No rellenes huecos ni supongas.
+Respuestas cortas: primero la respuesta, luego la cita.</pre>
+    <button class="cbtn" type="button">COPIAR</button>
+  </div>
+
+  <h4>Prompt 2.2 · Profesor que Examina <span class="pill">Chat persistente</span></h4>
+  <p style="font-size:.88rem;color:var(--mut)">Ubicación: <code>Configurar chat → Personalizado</code>. Actúa como un tutor interactivo que utiliza el método socrático para afianzar conceptos de clases grabadas.</p>
+  <div class="codeblk">
+<pre>Eres mi profesor de esta asignatura y te basas solo en las grabaciones de clase.
+Cuando te pregunte algo, no me des la respuesta directa: hazme antes una pregunta que me obligue a pensarla.
+Si respondo bien, confírmalo y añade un detalle que no haya dicho.
+Si me equivoco, dime dónde está el error y en qué momento de la clase se explica.
+Lenguaje sencillo. Si uso una palabra técnica mal, corrígemela.</pre>
+    <button class="cbtn" type="button">COPIAR</button>
+  </div>
+
+  <h4>Prompt 2.3 · Compañero de Diario <span class="pill">Chat persistente</span></h4>
+  <p style="font-size:.88rem;color:var(--mut)">Ubicación: <code>Configurar chat → Personalizado</code>. Analiza las reflexiones personales escuchando con objetividad y sin juzgar.</p>
+  <div class="codeblk">
+<pre>Eres un compañero que escucha mi diario hablado.
+Respondes con calma, sin juzgar y sin frases de autoayuda.
+Cuando te pregunte, busca patrones entre entradas de días distintos y cita la fecha o la entrada de cada cosa.
+Distingue lo que he dicho de lo que tú interpretas.
+No das consejos médicos ni psicológicos: si algo te parece serio, dime que lo hable con una persona.</pre>
+    <button class="cbtn" type="button">COPIAR</button>
+  </div>
+
+  <h4>Prompt 2.4 · Analista de Llamadas y Entrevistas <span class="pill">Chat persistente</span></h4>
+  <p style="font-size:.88rem;color:var(--mut)">Ubicación: <code>Configurar chat → Personalizado</code>. Desglosa conversaciones de trabajo clasificando hechos, opiniones y compromisos.</p>
+  <div class="codeblk">
+<pre>Eres un analista que revisa conversaciones de trabajo.
+Separa siempre tres cosas: hechos, opiniones y compromisos.
+Señala lo que la otra persona pidió, lo que yo prometí y las preguntas que quedaron sin responder.
+Cita el momento de cada cosa.
+Si detectas una contradicción entre lo dicho en momentos distintos, avísame.</pre>
+    <button class="cbtn" type="button">COPIAR</button>
+  </div>
+
+  <h4>Prompt 2.5 · Resumidor para Quien No Estuvo <span class="pill">Chat persistente</span></h4>
+  <p style="font-size:.88rem;color:var(--mut)">Ubicación: <code>Configurar chat → Personalizado</code>. Sintetiza la grabación priorizando la información directa para miembros del equipo ausentes.</p>
+  <div class="codeblk">
+<pre>Respondes como si se lo contaras a un compañero que no estuvo en la reunión.
+Empieza siempre por lo que le afecta a él, en tres frases como máximo.
+Después el detalle, solo si lo pide.
+Nada de relleno ni de frases de cortesía. Si hay una fecha o una tarea suya, va la primera.</pre>
+    <button class="cbtn" type="button">COPIAR</button>
+  </div>
+
+  <h3>Generación de informes estructurados</h3>
+
+  <h4>Prompt 3.1 · Acta de Reunión <span class="pill">Informe</span></h4>
+  <p style="font-size:.88rem;color:var(--mut)">Ubicación: <code>Informes → Crear el tuyo</code>. Genera un documento formal con la minuta de la sesión, asistentes y tabla de acuerdos.</p>
+  <div class="codeblk">
+<pre>Haz el acta de esta reunión con estas partes:
+1. Asistentes que se mencionan (solo nombre o cargo).
+2. Temas tratados, una línea cada uno.
+3. Acuerdos, con responsable y fecha.
+4. Tareas pendientes en una tabla: tarea, quién, cuándo.
+5. Lo que quedó sin decidir.
+Cita el momento exacto de cada acuerdo. Si un dato no se dijo, escribe «no se dijo». No inventes nada.</pre>
+    <button class="cbtn" type="button">COPIAR</button>
+  </div>
+
+  <h4>Prompt 3.2 · Apuntes de Clase <span class="pill">Informe</span></h4>
+  <p style="font-size:.88rem;color:var(--mut)">Ubicación: <code>Informes → Crear el tuyo</code>. Estructura la grabación de una lección en material de estudio pedagógico.</p>
+  <div class="codeblk">
+<pre>Convierte esta clase en apuntes para estudiar:
+1. Ideas principales, con un ejemplo cada una.
+2. Definiciones clave.
+3. Lo que el profesor repitió o dijo que es importante.
+4. Al final, 10 preguntas de examen de fácil a difícil, con la respuesta en una línea.
+Cita el momento de la grabación en cada idea principal.</pre>
+    <button class="cbtn" type="button">COPIAR</button>
+  </div>
+
+  <h4>Prompt 3.3 · Resumen Semanal de mi Diario <span class="pill">Informe</span></h4>
+  <p style="font-size:.88rem;color:var(--mut)">Ubicación: <code>Informes → Crear el tuyo</code>. Consolida los audios de la semana en un informe de balance personal.</p>
+  <div class="codeblk">
+<pre>Lee las entradas de diario de esta semana y dime:
+1. Qué ha ido bien.
+2. Qué se repite.
+3. Qué me ha preocupado.
+4. Qué dije que haría y no he hecho.
+5. Una sola cosa que podría cambiar la semana que viene.
+Cita la entrada de cada punto. Tono cercano y breve.</pre>
+    <button class="cbtn" type="button">COPIAR</button>
+  </div>
+
+  <h4>Prompt 3.4 · Seguimiento de Tareas <span class="pill">Informe</span></h4>
+  <p style="font-size:.88rem;color:var(--mut)">Ubicación: <code>Informes → Crear el tuyo</code>. Compila compromisos repartidos en múltiples grabaciones en una tabla unificada.</p>
+  <div class="codeblk">
+<pre>Saca todas las tareas y compromisos de estas grabaciones en una tabla con estas columnas:
+tarea · quién · fecha límite · estado (hecha / pendiente / sin fecha) · grabación y momento en que se dijo.
+Ordénala por fecha límite. Si una tarea aparece en varias reuniones, júntala y quédate con el estado más reciente.</pre>
+    <button class="cbtn" type="button">COPIAR</button>
+  </div>
+
+  <h4>Prompt 3.5 · Correo de Resumen <span class="pill">Informe</span></h4>
+  <p style="font-size:.88rem;color:var(--mut)">Ubicación: <code>Informes → Crear el tuyo</code>. Redacta una síntesis ejecutiva en formato de correo para enviar a los participantes.</p>
+  <div class="codeblk">
+<pre>Escribe un correo para enviar a los asistentes después de la reunión:
+- Asunto claro, con el tema y la fecha.
+- Saludo breve.
+- Los acuerdos en viñetas, con responsable y fecha.
+- La próxima reunión, si se mencionó.
+Máximo 150 palabras. Tono profesional y cercano. No añadas nada que no se dijera.</pre>
+    <button class="cbtn" type="button">COPIAR</button>
+  </div>
+
+  <h3>Usos especiales y evaluación de ideas</h3>
+
+  <h4>Prompt 4.1 · Ensayo de Entrevista o Presentación <span class="pill">Informe o chat</span></h4>
+  <p style="font-size:.88rem;color:var(--mut)">Ubicación: <code>Informes → Crear el tuyo</code> o chat. Evalúa la oratoria y la coherencia de una prueba hablada.</p>
+  <div class="codeblk">
+<pre>Esta grabación es un ensayo mío de una entrevista (o presentación). Evalúalo así:
+1. Qué respuestas fueron claras y cuáles se fueron por las ramas, citando el momento.
+2. Muletillas o frases que repito.
+3. Lo que no respondí aunque me lo preguntaron.
+4. Las tres preguntas difíciles que me podrían hacer y que no he preparado.
+Sé directo. No me digas que lo he hecho bien si no es verdad.</pre>
+    <button class="cbtn" type="button">COPIAR</button>
+  </div>
+
+  <h4>Prompt 4.2 · Ideas Sueltas → Plan <span class="pill">Informe o chat</span></h4>
+  <p style="font-size:.88rem;color:var(--mut)">Ubicación: <code>Informes → Crear el tuyo</code> o chat. Organiza notas de voz espontáneas y desordenadas en un plan ejecutable.</p>
+  <div class="codeblk">
+<pre>Estas grabaciones son ideas sueltas mías, dichas sin orden. Agrúpalas por tema, quita las repetidas y conviértelas en un plan:
+qué idea es, por qué merece la pena (en una línea), primer paso concreto y en qué grabación la dije.
+Al final, dime cuál harías primero y por qué.</pre>
+    <button class="cbtn" type="button">COPIAR</button>
+  </div>
+
+  <div class="callout warn">
+    <strong>Ética y privacidad:</strong> antes de activar la grabación en cualquier reunión presencial o
+    telemática, avisa a los participantes y obtén su consentimiento verbal. Si el audio contiene datos
+    sensibles (salud, finanzas, nóminas, expedientes de clientes), no lo subas a la plataforma. Y nunca
+    envíes un acta sin revisar antes las citas.
+  </div>
+
+  <div class="btnrow">
+    <button class="btn" data-goto="3">Ir a los proyectos prácticos →</button>
+    <button class="btn sec" data-goto="4">33 preguntas y respuestas</button>
+  </div>
+</section>
+
+<!-- ══════════════════════════ 3 · PRÁCTICA ══════════════════════════ -->
+<section data-t="PRÁCTICA">
+  <span class="eyebrow">Nivel avanzado · Casos reales</span>
+  <h2 style="margin-top:.2em">Proyectos integradores y ejercicios</h2>
+  <p class="lead">
+    Tres flujos completos, pensados para ejecutarse de principio a fin, más una batería de ejercicios con
+    solución explicada. Marca las casillas a medida que avances: tu progreso se guarda en este dispositivo.
+  </p>
+
+  <h3>Proyecto 1 · Sistema de actas y tareas automatizadas de empresa</h3>
+  <div class="card">
+    <p><strong>Objetivo:</strong> automatizar la minuta de las reuniones semanales de equipo.</p>
+    <ol class="steps">
+      <li><strong>Crea el cuaderno</strong><p>Nómbralo <code>Reuniones de Operaciones 2026</code>.</p></li>
+      <li><strong>Aplica el Prompt 2.1</strong><p>En <code>Configurar chat → Personalizado</code>, pega el <em>Secretario de reuniones</em>.</p></li>
+      <li><strong>Graba la sesión semanal</strong><p>Con el micrófono del móvil y previo consentimiento de los presentes.</p></li>
+      <li><strong>Genera los informes</strong><p>En <code>Informes → Crear el tuyo</code>, ejecuta el Prompt 3.1 (Acta) y el Prompt 3.5 (Correo de resumen).</p></li>
+      <li><strong>Valida antes de enviar</strong><p>Pulsa los hipervínculos de audio y comprueba responsables y fechas.</p></li>
+    </ol>
+    <div class="check"><input type="checkbox" id="p1a" data-k="p1a"><label for="p1a">Cuaderno creado con nombre específico</label></div>
+    <div class="check"><input type="checkbox" id="p1b" data-k="p1b"><label for="p1b">Prompt 2.1 pegado en Configurar chat → Personalizado</label></div>
+    <div class="check"><input type="checkbox" id="p1c" data-k="p1c"><label for="p1c">Grabación realizada con consentimiento previo</label></div>
+    <div class="check"><input type="checkbox" id="p1d" data-k="p1d"><label for="p1d">Acta y correo generados en Informes</label></div>
+    <div class="check"><input type="checkbox" id="p1e" data-k="p1e"><label for="p1e">Todas las citas verificadas escuchando el audio</label></div>
+  </div>
+
+  <h3>Proyecto 2 · Diario estoico personal y auditoría mensual</h3>
+  <div class="card">
+    <p><strong>Objetivo:</strong> evaluar la toma de decisiones personales y gestionar el estrés.</p>
+    <ol class="steps">
+      <li><strong>Crea el cuaderno</strong><p>Nómbralo <code>Mi Diario Personal</code>.</p></li>
+      <li><strong>Configura el chat con el Prompt 1.1</strong><p>El <em>Diario estoico</em> en <code>Configurar chat → Personalizado</code>.</p></li>
+      <li><strong>Graba dos minutos cada noche</strong><p>Antes de dormir, sin preparar el guion. La espontaneidad es el valor.</p></li>
+      <li><strong>Al final del mes, ejecuta el Prompt 1.2</strong><p>La <em>Revisión estoica del mes</em> en <code>Informes</code>, para identificar patrones y hábitos repetidos.</p></li>
+    </ol>
+    <div class="check"><input type="checkbox" id="p2a" data-k="p2a"><label for="p2a">Cuaderno «Mi Diario Personal» creado</label></div>
+    <div class="check"><input type="checkbox" id="p2b" data-k="p2b"><label for="p2b">Prompt 1.1 activo como comportamiento persistente</label></div>
+    <div class="check"><input type="checkbox" id="p2c" data-k="p2c"><label for="p2c">Siete entradas nocturnas grabadas</label></div>
+    <div class="check"><input type="checkbox" id="p2d" data-k="p2d"><label for="p2d">Revisión mensual generada y leída con calma</label></div>
+  </div>
+
+  <h3>Proyecto 3 · Asistente de estudio universitario</h3>
+  <div class="card">
+    <p><strong>Objetivo:</strong> optimizar el repaso para exámenes a partir de clases magistrales grabadas.</p>
+    <ol class="steps">
+      <li><strong>Crea el cuaderno</strong><p>Nómbralo <code>Asignatura: Derecho Constitucional</code> (o la tuya).</p></li>
+      <li><strong>Configura el chat con el Prompt 2.2</strong><p>El <em>Profesor que examina</em>.</p></li>
+      <li><strong>Graba la clase magistral</strong><p>Con el micrófono integrado o subiendo el archivo desde la grabadora del móvil.</p></li>
+      <li><strong>Genera el informe con el Prompt 3.2</strong><p>Obtendrás glosario y diez preguntas tipo test con respuestas.</p></li>
+      <li><strong>Usa el chat de forma interactiva</strong><p>Responde las preguntas que la IA te formule y deja que te corrija.</p></li>
+    </ol>
+    <div class="check"><input type="checkbox" id="p3a" data-k="p3a"><label for="p3a">Cuaderno de la asignatura creado</label></div>
+    <div class="check"><input type="checkbox" id="p3b" data-k="p3b"><label for="p3b">Prompt 2.2 activo como comportamiento persistente</label></div>
+    <div class="check"><input type="checkbox" id="p3c" data-k="p3c"><label for="p3c">Apuntes generados con el Prompt 3.2</label></div>
+    <div class="check"><input type="checkbox" id="p3d" data-k="p3d"><label for="p3d">Las diez preguntas respondidas en el chat</label></div>
+  </div>
+
+  <h3>Ejercicios con solución explicada</h3>
+
+  <details>
+    <summary>Ejercicio 1 · Tu reunión dura 95 minutos. ¿Qué haces?</summary>
+    <div class="dbody">
+      <p><strong>Respuesta:</strong> grabas los primeros 60 minutos, detienes la grabación y arrancas una
+      segunda fuente para los 35 restantes. Ambas quedan en el mismo cuaderno y se procesan juntas.</p>
+      <p><strong>Por qué:</strong> el límite de una hora es por grabación continua, no por cuaderno. Partir la
+      sesión no degrada el resultado siempre que ambas fuentes estén en el mismo cuaderno y generes el informe
+      después de subir la segunda.</p>
+      <p><strong>Error típico:</strong> intentar estirar la grabación más allá del límite. La plataforma la
+      detiene sola y pierdes el tramo intermedio si no reaccionas.</p>
+    </div>
+  </details>
+
+  <details>
+    <summary>Ejercicio 2 · El acta atribuye una tarea a la persona equivocada. ¿Cómo lo arreglas?</summary>
+    <div class="dbody">
+      <p><strong>Respuesta:</strong> pulsas la cita asociada a esa tarea, escuchas el audio original y escribes
+      en el chat: «Corrige el responsable de la tarea X: es Ana, no Luis. Cita el momento exacto en que Ana lo
+      asume». Después regeneras el informe.</p>
+      <p><strong>Por qué:</strong> el sistema de citas existe precisamente para detectar este tipo de error.
+      Nunca corrijas a mano sin escuchar antes la fuente: podrías estar corrigiendo una atribución que era
+      correcta.</p>
+    </div>
+  </details>
+
+  <details>
+    <summary>Ejercicio 3 · Quieres el mismo cuaderno con dos «personalidades» distintas. ¿Se puede?</summary>
+    <div class="dbody">
+      <p><strong>Respuesta:</strong> no en el mismo cuaderno. Cada cuaderno admite una única configuración
+      persistente de chat personalizado a la vez.</p>
+      <p><strong>Solución:</strong> crea dos cuadernos y sube las mismas fuentes a ambos, o cambia el prompt
+      cada vez que necesites el otro rol (menos cómodo, pero válido). Para casos puntuales, usa la modalidad de
+      consulta directa en el chat, donde puedes dar instrucciones específicas sin tocar la configuración
+      persistente.</p>
+    </div>
+  </details>
+
+  <details>
+    <summary>Ejercicio 4 · El botón del micrófono no aparece y tienes la reunión en 10 minutos</summary>
+    <div class="dbody">
+      <p><strong>Respuesta:</strong> usas el plan de contingencia. Abres la grabadora de voz nativa del móvil,
+      grabas la reunión completa y después subes el archivo con <code>Añadir fuente → Subir archivo</code>
+      (formatos MP3, WAV, M4A o AAC).</p>
+      <p><strong>Por qué funciona:</strong> el resultado es idéntico. La única diferencia es que la grabación
+      no entra en tiempo real, sino al terminar. No pierdes ninguna funcionalidad de transcripción, citas ni
+      informes.</p>
+      <p><strong>Antes de la reunión:</strong> comprueba que la app esté actualizada en Play Store o App Store
+      y que hayas concedido permisos de micrófono al navegador.</p>
+    </div>
+  </details>
+
+  <details>
+    <summary>Ejercicio 5 · Necesitas que el acta salga redactada en inglés</summary>
+    <div class="dbody">
+      <p><strong>Respuesta:</strong> añades al final del Prompt 3.1 la instrucción:
+      «Redacta la respuesta completa en inglés».</p>
+      <p><strong>Por qué:</strong> los prompts son texto libre. La instrucción de idioma se añade como una
+      línea más al final del bloque y el modelo la respeta sin romper el formato del acta.</p>
+    </div>
+  </details>
+
+  <details>
+    <summary>Ejercicio 6 · Quieres combinar el audio de la reunión con el PDF del presupuesto</summary>
+    <div class="dbody">
+      <p><strong>Respuesta:</strong> sí es posible. Añades el PDF como fuente adicional al mismo cuaderno
+      (desde archivo local o desde Google Drive) y después ejecutas el informe.</p>
+      <p><strong>Qué consigues:</strong> la IA puede cruzar lo dicho en la reunión con las cifras del
+      documento, y citar tanto el minuto del audio como la página del PDF. Es la forma más potente de trabajar
+      con Gemini Notebook: audio + documento en el mismo cuaderno.</p>
+    </div>
+  </details>
+
+  <div class="btnrow">
+    <button class="btn" data-goto="4">Ir a las 33 preguntas →</button>
+    <button class="btn sec" data-goto="5">Ver errores frecuentes</button>
+  </div>
+</section>
+
+<!-- ══════════════════════════ 4 · 33 PREGUNTAS ══════════════════════════ -->
+<section data-t="33 Preguntas (Q&amp;A)">
+  <span class="eyebrow">Banco completo · 33 preguntas</span>
+  <h2 style="margin-top:.2em">33 preguntas y respuestas</h2>
+  <p class="lead">
+    Organizadas en tres niveles de dificultad creciente. Despliega cada pregunta para ver la respuesta.
+    Todas las respuestas están basadas en el manual de referencia.
+  </p>
+
+  <h3>Nivel básico <span class="qcount">Preguntas 1 a 11</span></h3>
+
+  <details>
+    <summary>1. ¿Necesito pagar una suscripción para usar las grabaciones en Gemini Notebook?</summary>
+    <div class="dbody">No. La función de grabación de audio y el uso de los 15 prompts funcionan de forma totalmente gratuita tanto en cuentas personales como en cuentas Workspace de Google.</div>
+  </details>
+
+  <details>
+    <summary>2. ¿Dónde se encuentra el botón para iniciar una grabación?</summary>
+    <div class="dbody">En el panel de la izquierda llamado «Fuentes». Al pulsar en «Añadir fuente» aparece la opción «Grabadora», con un icono de micrófono.</div>
+  </details>
+
+  <details>
+    <summary>3. ¿Qué hago si el botón del micrófono no aparece en mi app móvil?</summary>
+    <div class="dbody">La actualización se despliega progresivamente, así que puede tardar en llegar. Mientras tanto, graba la sesión con la app de grabadora habitual de tu teléfono y sube después el archivo mediante <code>Añadir fuente → Subir archivo</code>. El resultado es idéntico.</div>
+  </details>
+
+  <details>
+    <summary>4. ¿Cuál es la duración máxima permitida para una sola grabación?</summary>
+    <div class="dbody">El límite máximo de tiempo continuo por cada grabación de audio directo es de 1 hora (60 minutos).</div>
+  </details>
+
+  <details>
+    <summary>5. ¿Qué ocurre si mi reunión dura más de una hora?</summary>
+    <div class="dbody">Debes detener la grabación al llegar al límite e iniciar una segunda grabación. Ambas se guardan como fuentes de audio independientes dentro del mismo cuaderno y se procesan juntas al generar el informe.</div>
+  </details>
+
+  <details>
+    <summary>6. ¿Qué formatos de audio se soportan al subir archivos manualmente desde el móvil?</summary>
+    <div class="dbody">Puedes subir archivos en formatos estándar como MP3, WAV, AAC y M4A.</div>
+  </details>
+
+  <details>
+    <summary>7. ¿Gemini Notebook transcribe el audio a texto completo automáticamente?</summary>
+    <div class="dbody">Sí. Procesa el audio internamente en una transcripción completa que después utiliza para responder tus consultas y generar informes con citas exactas al momento del audio.</div>
+  </details>
+
+  <details>
+    <summary>8. ¿Puedo usar Gemini Notebook en un ordenador de sobremesa?</summary>
+    <div class="dbody">Sí. La versión web es totalmente funcional y sincroniza en tiempo real todos los cuadernos y audios creados en el móvil.</div>
+  </details>
+
+  <details>
+    <summary>9. ¿Es obligatorio pedir permiso a las personas presentes antes de grabar?</summary>
+    <div class="dbody">Sí. Por razones legales y éticas es obligatorio informar a los asistentes y obtener su consentimiento expreso antes de iniciar la grabación. No ocultes ni disimules la presencia del teléfono en la mesa.</div>
+  </details>
+
+  <details>
+    <summary>10. ¿Los prompts se aplican a todas las fuentes del cuaderno a la vez?</summary>
+    <div class="dbody">Sí. Cuando ejecutas un informe o realizas una consulta en el chat, la inteligencia artificial analiza la totalidad de las fuentes cargadas en ese cuaderno específico.</div>
+  </details>
+
+  <details>
+    <summary>11. ¿Puedo borrar una grabación del cuaderno si me equivoco?</summary>
+    <div class="dbody">Sí. Puedes eliminar cualquier fuente de audio desde el panel lateral de Fuentes, haciendo clic en el menú de opciones de la fuente concreta.</div>
+  </details>
+
+  <h3>Nivel avanzado <span class="qcount">Preguntas 12 a 22</span></h3>
+
+  <details>
+    <summary>12. ¿Cuál es la diferencia entre pegar un prompt en el chat o en informes?</summary>
+    <div class="dbody">El prompt en <code>Configurar chat → Personalizado</code> establece las reglas de comportamiento permanente para el chat continuo del cuaderno. Por su parte, <code>Informes → Crear el tuyo</code> genera un documento de texto estructurado e independiente que se guarda como nota permanente.</div>
+  </details>
+
+  <details>
+    <summary>13. ¿Puedo tener más de un prompt de chat configurado simultáneamente en un cuaderno?</summary>
+    <div class="dbody">No. Cada cuaderno admite una única configuración persistente de chat personalizado a la vez. Si necesitas otro comportamiento, debes cambiar el texto o crear un cuaderno nuevo.</div>
+  </details>
+
+  <details>
+    <summary>14. ¿Puedo generar múltiples informes diferentes sobre la misma grabación?</summary>
+    <div class="dbody">Sí. Puedes crear todos los informes que necesites sobre el mismo conjunto de audios. Por ejemplo, el Acta de reunión y el Correo de resumen a partir de la misma fuente.</div>
+  </details>
+
+  <details>
+    <summary>15. ¿Cómo funcionan exactamente las citas de tiempo en las respuestas?</summary>
+    <div class="dbody">Cada afirmación relevante incluye un número de cita interactivo. Al pulsar sobre él, la aplicación reproduce el fragmento de audio original comenzando exactamente en el segundo en que fue dicho.</div>
+  </details>
+
+  <details>
+    <summary>16. ¿Se pueden combinar fuentes de audio con archivos PDF o enlaces web en el mismo cuaderno?</summary>
+    <div class="dbody">Sí. Gemini Notebook permite combinar diferentes tipos de fuente —audios grabados, documentos PDF, textos de Google Drive y vídeos— dentro del mismo cuaderno.</div>
+  </details>
+
+  <details>
+    <summary>17. ¿Cómo puedo conectar Google Drive con Gemini Notebook?</summary>
+    <div class="dbody">A través del botón <code>Añadir fuente → Google Drive</code>, autorizando el acceso a tu unidad de nube para incorporar archivos existentes.</div>
+  </details>
+
+  <details>
+    <summary>18. ¿Qué debo hacer si la IA omite un detalle importante que sí se dijo en la reunión?</summary>
+    <div class="dbody">Escribe directamente en el chat: «Revisa el minuto X al Y y añade al resumen lo tratado sobre el tema Z», indicando la franja temporal para forzar la reevaluación de ese tramo concreto.</div>
+  </details>
+
+  <details>
+    <summary>19. ¿El prompt «Secretario de reuniones» inventa datos si falta información?</summary>
+    <div class="dbody">No. El prompt incluye explícitamente la instrucción estricta de responder «no se dijo» en caso de que un dato no haya sido verbalizado en la grabación.</div>
+  </details>
+
+  <details>
+    <summary>20. ¿Cómo adapto un prompt para que responda en otro idioma?</summary>
+    <div class="dbody">Solo necesitas añadir al final del prompt la instrucción: «Redacta la respuesta completa en [idioma deseado]».</div>
+  </details>
+
+  <details>
+    <summary>21. ¿Qué ocurre si dos personas hablan a la vez durante la grabación?</summary>
+    <div class="dbody">La calidad de la transcripción puede disminuir en los momentos de solapamiento de voces. Se recomienda la buena práctica de mantener turnos de palabra limpios y evitar hablar por encima de los demás.</div>
+  </details>
+
+  <details>
+    <summary>22. ¿Se guarda el archivo de audio original en los servidores de la aplicación?</summary>
+    <div class="dbody">El audio se almacena como fuente asociada a tu cuenta de Google, dentro del entorno seguro de Gemini Notebook, conforme a sus términos de privacidad.</div>
+  </details>
+
+  <h3>Nivel PRO <span class="qcount">Preguntas 23 a 33</span></h3>
+
+  <details>
+    <summary>23. ¿Cómo estructurar un flujo de trabajo sinérgico entre Gemini Notebook y otros modelos como Claude o ChatGPT?</summary>
+    <div class="dbody">Puedes usar Gemini Notebook para procesar el audio y obtener la transcripción o minuta con citas precisas. Después exportas la nota del informe e introduces ese texto ya procesado en Claude o ChatGPT para redactar propuestas comerciales avanzadas o código estructurado.</div>
+  </details>
+
+  <details>
+    <summary>24. ¿Cómo auditar la evolución de un proyecto utilizando grabaciones semanales recurrentes?</summary>
+    <div class="dbody">Carga todas las grabaciones semanales dentro del mismo cuaderno y ejecuta el prompt de Seguimiento de Tareas (Prompt 3.4). El sistema consolidará el estado más reciente de cada tarea identificando inconsistencias entre semanas.</div>
+  </details>
+
+  <details>
+    <summary>25. ¿De qué manera el «Diario Estoico» previene sesgos de autoayuda genérica?</summary>
+    <div class="dbody">El prompt exige expresamente un tono directo, centrado únicamente en la dicotomía del control —lo que dependía del usuario frente a lo que no— y prohíbe las frases motivacionales vacías.</div>
+  </details>
+
+  <details>
+    <summary>26. ¿Cómo evitar problemas de cumplimiento del RGPD al procesar grabaciones con datos de clientes?</summary>
+    <div class="dbody">Evita incluir audios que contengan información confidencial o sensible en cuentas personales. Utiliza siempre entornos corporativos autorizados por el departamento de IT y omite la lectura verbal de datos identificativos durante la sesión.</div>
+  </details>
+
+  <details>
+    <summary>27. ¿Qué hacer si en una reunión se expresan opiniones contradictorias en momentos distintos?</summary>
+    <div class="dbody">El prompt Analista de llamadas y entrevistas (Prompt 2.4) está configurado específicamente para detectar cambios de postura o contradicciones entre distintas marcas de tiempo de la conversación.</div>
+  </details>
+
+  <details>
+    <summary>28. ¿Es posible programar la generación automática de informes mediante API?</summary>
+    <div class="dbody">Actualmente Gemini Notebook se gestiona de forma nativa a través de su interfaz web y móvil. Para automatizaciones masivas se emplean flujos de exportación de notas hacia Google Drive.</div>
+  </details>
+
+  <details>
+    <summary>29. ¿Cómo optimizar el prompt «Profesor que examina» para preparar oposiciones o exámenes complejos?</summary>
+    <div class="dbody">Añade al prompt la condición: «Formula preguntas de dificultad progresiva basadas estrictamente en la legislación citada en el audio e indícame el minuto exacto donde se explicó el artículo».</div>
+  </details>
+
+  <details>
+    <summary>30. ¿Qué estrategia seguir si una reunión tiene mucho ruido de fondo?</summary>
+    <div class="dbody">Si el audio es inteligible para el oído humano, Gemini Notebook logrará procesar la mayor parte del contexto. Para entornos ruidosos se sugiere utilizar un micrófono externo conectado al smartphone o aplicar una reducción de ruido previa al archivo antes de subirlo.</div>
+  </details>
+
+  <details>
+    <summary>31. ¿Cómo auditar el rendimiento de un equipo de ventas mediante ensayos grabados?</summary>
+    <div class="dbody">Utiliza el prompt Ensayo de entrevista o presentación (Prompt 4.1) para detectar muletillas, respuestas evasivas y argumentos no preparados antes de las reuniones reales con clientes.</div>
+  </details>
+
+  <details>
+    <summary>32. ¿Se pueden unificar varios audios cortos de notas de voz en un solo plan estratégico?</summary>
+    <div class="dbody">Sí, mediante el prompt Ideas sueltas → Plan (Prompt 4.2), que categoriza pensamientos dispersos, elimina duplicidades y prioriza las acciones inmediatas.</div>
+  </details>
+
+  <details>
+    <summary>33. ¿Qué garantía existe de que la IA no introduzca alucinaciones en un acta oficial?</summary>
+    <div class="dbody">La garantía se apoya en el diseño de prompts que prohíben las suposiciones y imponen el uso de marcas de tiempo obligatorias. La validación final la realiza siempre el usuario al hacer clic en las citas para verificar el audio original. Ningún documento generado debe enviarse sin esa revisión humana.</div>
+  </details>
+
+  <div class="btnrow">
+    <button class="btn" data-goto="5">Ver errores y solución de problemas →</button>
+    <button class="btn sec" data-goto="6">Resumen final</button>
+  </div>
+</section>
+
+<!-- ══════════════════════════ 5 · ERRORES ══════════════════════════ -->
+<section data-t="ERRORES">
+  <span class="eyebrow">Solución de problemas</span>
+  <h2 style="margin-top:.2em">Errores frecuentes y cómo resolverlos</h2>
+  <p class="lead">Los cuatro fallos técnicos más habituales, con su causa y su solución paso a paso, más los errores de criterio que conviene evitar desde el primer día.</p>
+
+  <h3>Tabla de resolución rápida</h3>
+  <div class="tw">
+    <table>
+      <thead>
+        <tr><th>Problema / Error</th><th>Causa principal</th><th>Solución paso a paso</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>No aparece el botón de micrófono en la app</strong></td>
+          <td>Despliegue progresivo de la actualización o app desactualizada.</td>
+          <td>1. Actualiza Gemini Notebook desde la tienda de aplicaciones.<br>2. Si sigue sin aparecer, graba con la grabadora del móvil y sube el archivo de audio con «Añadir fuente → Subir archivo».</td>
+        </tr>
+        <tr>
+          <td><strong>Nombres propios mal transcritos</strong></td>
+          <td>Ruido de fondo o acentos marcados durante la sesión.</td>
+          <td>En la ventana del chat, añade una nota aclaratoria: «Corrige las menciones a “Marta” por “Martha” en las citas».</td>
+        </tr>
+        <tr>
+          <td><strong>La grabación se detuvo a los 60 minutos</strong></td>
+          <td>Límite máximo de duración continua por fuente de audio.</td>
+          <td>Pulsa de nuevo en «Añadir fuente → Grabadora» para iniciar una segunda parte de la grabación. Ambas fuentes conviven en el mismo cuaderno.</td>
+        </tr>
+        <tr>
+          <td><strong>Error al conectar con Google Drive</strong></td>
+          <td>Permisos de cuenta o sesión caducada.</td>
+          <td>Vuelve a autenticar tu cuenta de Google Drive en el panel de fuentes y acepta los permisos solicitados.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>Errores de criterio que conviene evitar</h3>
+
+  <details>
+    <summary>❌ Mezclar todas las temáticas en un solo cuaderno</summary>
+    <div class="dbody">
+      <p><strong>Qué pasa:</strong> la IA responde mezclando contextos. Un acta de trabajo puede acabar citando
+      fragmentos de tu diario personal, y las respuestas pierden precisión.</p>
+      <p><strong>Qué hacer:</strong> un cuaderno por temática. Es la recomendación explícita del manual y la
+      diferencia entre un sistema útil y un cajón de sastre.</p>
+    </div>
+  </details>
+
+  <details>
+    <summary>❌ Grabar sin avisar a los presentes</summary>
+    <div class="dbody">
+      <p><strong>Qué pasa:</strong> incurres en un problema legal y ético, además de romper la confianza del
+      grupo.</p>
+      <p><strong>Qué hacer:</strong> di en voz alta «Voy a grabar la conversación para generar automáticamente
+      el acta y asegurar que no perdamos ningún acuerdo». Confirma la aceptación verbal antes de pulsar el
+      botón. No ocultes el teléfono en la mesa.</p>
+    </div>
+  </details>
+
+  <details>
+    <summary>❌ Subir audios con datos sensibles a una cuenta personal</summary>
+    <div class="dbody">
+      <p><strong>Qué pasa:</strong> incumples las políticas de protección de datos (RGPD / LOPD) si el audio
+      contiene información de salud, expedientes médicos, datos bancarios, nóminas o datos de clientes.</p>
+      <p><strong>Qué hacer:</strong> no subas ese audio a la plataforma. En entornos laborales, utiliza la
+      cuenta corporativa autorizada por el departamento de IT de tu organización.</p>
+    </div>
+  </details>
+
+  <details>
+    <summary>❌ Enviar un acta sin revisar las citas</summary>
+    <div class="dbody">
+      <p><strong>Qué pasa:</strong> la IA es una herramienta de asistencia, no un notario. Un responsable mal
+      atribuido o una fecha equivocada puede tener consecuencias reales.</p>
+      <p><strong>Qué hacer:</strong> pulsa las marcas de tiempo interactivas, escucha la voz original y valida
+      que la atribución de tareas y fechas sea cien por cien correcta antes de enviar el documento a clientes
+      o superiores.</p>
+    </div>
+  </details>
+
+  <details>
+    <summary>❌ Dar por hecho que el botón del micrófono siempre estará disponible</summary>
+    <div class="dbody">
+      <p><strong>Qué pasa:</strong> si dependes de la grabación nativa y el despliegue no ha llegado a tu
+      dispositivo, te quedas sin plan B en mitad de una reunión importante.</p>
+      <p><strong>Qué hacer:</strong> ten siempre preparada la grabadora de voz del móvil y conoce la ruta
+      <code>Añadir fuente → Subir archivo</code>. Es un plan de contingencia de treinta segundos.</p>
+    </div>
+  </details>
+
+  <div class="callout bad">
+    <strong>Regla que nunca falla:</strong> si el resultado de un informe te parece sospechosamente perfecto,
+    revísalo el doble. La IA no avisa cuando inventa: simplemente rellena huecos con la misma seguridad con la
+    que acierta.
+  </div>
+
+  <div class="btnrow">
+    <button class="btn" data-goto="6">Ir al resumen →</button>
+    <button class="btn sec" data-goto="4">Volver a las 33 preguntas</button>
+  </div>
+</section>
+
+<!-- ══════════════════════════ 6 · RESUMEN ══════════════════════════ -->
+<section data-t="RESUMEN">
+  <span class="eyebrow">Cierre</span>
+  <h2 style="margin-top:.2em">Resumen y checklist final</h2>
+
+  <div class="card">
+    <h3 style="margin-top:0">Lo esencial en diez líneas</h3>
+    <ul>
+      <li>Gemini Notebook (antes NotebookLM) es un entorno de trabajo con IA que responde <strong>solo</strong> sobre las fuentes que tú subes.</li>
+      <li>El botón de micrófono nativo permite grabar hasta <strong>60 minutos</strong> por fuente, directo al cuaderno.</li>
+      <li>Si no ves el botón, la solución es idéntica: graba con el móvil y sube el archivo (MP3, WAV, M4A, AAC).</li>
+      <li>Existen <strong>tres modalidades</strong>: chat persistente, informes estructurados y consultas directas.</li>
+      <li>El <strong>sistema de citas</strong> es la ventaja diferencial: cada frase enlaza al segundo exacto del audio.</li>
+      <li>Hay <strong>15 prompts</strong> probados: 3 de diario, 5 de chat persistente, 5 de informes y 2 de usos especiales.</li>
+      <li>La ética no es opcional: <strong>consentimiento informado</strong> antes de grabar a terceros.</li>
+      <li>Los datos sensibles (salud, finanzas, nóminas) no se suben a cuentas personales.</li>
+      <li>La <strong>verificación humana</strong> de las citas es obligatoria antes de enviar cualquier documento.</li>
+      <li>Un cuaderno por temática. Siempre.</li>
+    </ul>
+  </div>
+
+  <h3>Checklist de aceptación</h3>
+  <p style="font-size:.9rem;color:var(--mut)">Marca cada casilla cuando lo hayas comprobado de verdad. El progreso se guarda en este dispositivo.</p>
+
+  <div class="card">
+    <div class="check"><input type="checkbox" id="c01" data-k="c01"><label for="c01">He creado mi primer cuaderno con un nombre específico.</label></div>
+    <div class="check"><input type="checkbox" id="c02" data-k="c02"><label for="c02">He localizado el botón del micrófono dentro de «Añadir fuente».</label></div>
+    <div class="check"><input type="checkbox" id="c03" data-k="c03"><label for="c03">Conozco el plan de contingencia con la grabadora del móvil.</label></div>
+    <div class="check"><input type="checkbox" id="c04" data-k="c04"><label for="c04">He realizado al menos una grabación de prueba de principio a fin.</label></div>
+    <div class="check"><input type="checkbox" id="c05" data-k="c05"><label for="c05">He configurado un prompt persistente en «Configurar chat → Personalizado».</label></div>
+    <div class="check"><input type="checkbox" id="c06" data-k="c06"><label for="c06">He generado al menos un informe con «Informes → Crear el tuyo».</label></div>
+    <div class="check"><input type="checkbox" id="c07" data-k="c07"><label for="c07">He pulsado una cita temporal y he comprobado el audio original.</label></div>
+    <div class="check"><input type="checkbox" id="c08" data-k="c08"><label for="c08">He conectado Google Drive como fuente adicional.</label></div>
+    <div class="check"><input type="checkbox" id="c09" data-k="c09"><label for="c09">Aviso siempre a los presentes antes de grabar y pido consentimiento.</label></div>
+    <div class="check"><input type="checkbox" id="c10" data-k="c10"><label for="c10">No subo datos sensibles a cuentas personales.</label></div>
+    <div class="check"><input type="checkbox" id="c11" data-k="c11"><label for="c11">Reviso cada acta antes de enviarla, sin excepciones.</label></div>
+    <div class="check"><input type="checkbox" id="c12" data-k="c12"><label for="c12">He completado al menos uno de los tres proyectos integradores.</label></div>
+  </div>
+
+  <h3>Próximos pasos sugeridos</h3>
+  <div class="grid g3">
+    <div class="mini">
+      <h4>Semana 1</h4>
+      <p>Crea el cuaderno de reuniones y graba la primera sesión con el Prompt 2.1 activo.</p>
+    </div>
+    <div class="mini">
+      <h4>Semana 2</h4>
+      <p>Añade el Acta de reunión y el Correo de resumen como informes recurrentes.</p>
+    </div>
+    <div class="mini">
+      <h4>Mes 1</h4>
+      <p>Completa una auditoría mensual con el Prompt 1.2 o el Prompt 3.4 según tu caso.</p>
+    </div>
+  </div>
+
+  <div class="callout ok">
+    <strong>El objetivo real:</strong> que dentro de un mes no tengas que preguntarte «¿qué se decidió en
+    aquella reunión?». Tendrás el acta, el acuerdo y el segundo exacto en que se dijo.
+  </div>
+
+  <div class="btnrow">
+    <button class="btn" data-goto="7">Ver las fuentes →</button>
+    <button class="btn sec" data-goto="0">Volver al inicio</button>
+  </div>
+</section>
+
+<!-- ══════════════════════════ 7 · FUENTES ══════════════════════════ -->
+<section data-t="FUENTES">
+  <span class="eyebrow">Documentación</span>
+  <h2 style="margin-top:.2em">Fuentes de información fiables</h2>
+  <p class="lead">
+    Todo el contenido de este tutorial procede del manual de referencia sobre Gemini Notebook y de la
+    documentación oficial del producto. No se han añadido datos, procedimientos ni funcionalidades que no
+    figuren en dichas fuentes.
+  </p>
+
+  <div class="card">
+    <h3 style="margin-top:0">1 · Documentación oficial de Gemini Notebook (Google)</h3>
+    <p>Portal de soporte y novedades oficiales de Google sobre Gemini Notebook y NotebookLM.</p>
+    <p style="font-size:.88rem;color:var(--mut)">
+      Es la fuente de autoridad para cualquier duda sobre cuotas, disponibilidad por país o cambios en la
+      interfaz.
+    </p>
+  </div>
+
+  <div class="card">
+    <h3 style="margin-top:0">2 · Guía de prompts para grabaciones — Diario Vida (Paco Vida)</h3>
+    <p>Artículo de referencia que recopila los 15 prompts oficiales para actas, clases y diario estoico.</p>
+    <div class="codeblk">
+<pre>https://diariovida.com/prompts-grabaciones-gemini-notebook/</pre>
+      <button class="cbtn" type="button">COPIAR</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3 style="margin-top:0">3 · Vídeo explicativo «Gemini Notebook ya graba tus reuniones (y tu diario)»</h3>
+    <p>Análisis práctico de la grabadora integrada y de la conectividad con Google Drive, por Paco Vida.</p>
+    <div class="codeblk">
+<pre>https://youtube.com/watch?v=S3w1ZkMW9Zo</pre>
+      <button class="cbtn" type="button">COPIAR</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3 style="margin-top:0">4 · Recursos complementarios de inteligencia artificial práctica</h3>
+    <p>Repositorio de guías y herramientas avanzadas de IA sin código.</p>
+    <div class="codeblk">
+<pre>https://diariovida.com/recursos/</pre>
+      <button class="cbtn" type="button">COPIAR</button>
+    </div>
+  </div>
+
+  <div class="callout">
+    <strong>Nota de honestidad documental:</strong> las cuotas exactas de almacenamiento, el número máximo de
+    cuadernos y los límites de fuentes simultáneas por cuaderno varían según el tipo de cuenta y pueden
+    cambiar con el tiempo. Consulta siempre la documentación oficial antes de tomar una decisión que dependa
+    de esos valores.
+  </div>
+
+  <div class="btnrow">
+    <button class="btn" data-goto="8">Ver créditos →</button>
+    <button class="btn sec" data-goto="0">Volver al inicio</button>
+  </div>
+</section>
+
+<!-- ══════════════════════════ 8 · CRÉDITOS ══════════════════════════ -->
+<section data-t="CRÉDITOS">
+  <h2 style="margin-top:.2em">Créditos</h2>
+
+  <div class="hero-wrap" id="svgCred"></div>
+
+  <p class="lead" style="text-align:center;margin:0 auto 1.6em;max-width:62ch">
+    La ilustración representa el flujo central de Gemini Notebook: un micrófono captura la voz de una reunión,
+    un núcleo de inteligencia artificial la procesa y de ella surge un documento estructurado con marcas de
+    tiempo verificables, al que cualquiera puede volver para escuchar el momento exacto en que se dijo cada cosa.
+  </p>
+
+  <div class="card">
+    <p class="author">Rubén Sbarsky</p>
+    <p class="authorRole">Autor del tutorial</p>
+
+    <div class="meta">
+      <div><span>Versión del documento</span><b>1.0.0</b></div>
+      <div><span>Archivo</span><b>tutorial_gemini_notebook_grabaciones_V001.html</b></div>
+      <div><span>Fecha y hora de creación</span><b>28/10/2026 — 21:05:05</b></div>
+      <div><span>Idioma</span><b>Castellano</b></div>
+      <div><span>Temática</span><b>Gemini Notebook · Grabaciones, reuniones y diario personal</b></div>
+      <div><span>Formato</span><b>Archivo HTML único, autónomo y sin dependencias externas</b></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3 style="margin-top:0">Sobre este documento</h3>
+    <p>
+      Tutorial interactivo construido a partir del <em>Manual Maestro de Gemini Notebook: grabaciones,
+      reuniones y diario personal</em>. El contenido se ha reorganizado con una secuencia pedagógica
+      —qué es, para qué sirve, por qué importa, cómo se hace, ejemplo, práctica, errores y resumen— sin alterar
+      el significado de las fuentes originales.
+    </p>
+    <p>
+      Los 15 prompts se reproducen íntegros y listos para copiar. Las 33 preguntas y respuestas se presentan
+      organizadas por nivel de dificultad, tal como figuran en el material de referencia.
+    </p>
+    <div class="callout warn">
+      <strong>Aviso:</strong> este tutorial es material formativo. No sustituye la documentación oficial de
+      Google ni constituye asesoramiento legal en materia de protección de datos. Antes de grabar a terceros,
+      consulta la normativa aplicable en tu jurisdicción.
+    </div>
+  </div>
+
+  <div class="card">
+    <h3 style="margin-top:0">Cómo usar este archivo</h3>
+    <ul>
+      <li>Funciona sin conexión una vez descargado: no carga fuentes, librerías ni recursos externos.</li>
+      <li>El progreso de las listas de comprobación y la pestaña activa se guardan en el navegador.</li>
+      <li>El botón <strong>⎙ PDF</strong> del índice prepara el documento completo para imprimir o guardar como PDF, incluyendo todas las pestañas.</li>
+      <li>Si el navegador bloquea la impresión, abre el archivo directamente en el navegador y usa <code>Ctrl+P</code> o <code>Cmd+P</code>.</li>
+    </ul>
+  </div>
+
+  <div class="btnrow" style="justify-content:center">
+    <button class="btn sec" data-goto="0">Volver al inicio ↑</button>
+  </div>
+</section>
+
+</main>
+
+<script>
+(function(){
+  'use strict';
+
+  /* ======================================================================
+     0 · UTILIDADES BÁSICAS
+     ====================================================================== */
+  const $  = (sel, root) => (root || document).querySelector(sel);
+  const $$ = (sel, root) => Array.prototype.slice.call((root || document).querySelectorAll(sel));
+
+  const storage = {
+    get(k){ try { return localStorage.getItem(k); } catch(e){ return null; } },
+    set(k, v){ try { localStorage.setItem(k, v); return true; } catch(e){ return false; } },
+    del(k){ try { localStorage.removeItem(k); } catch(e){} }
+  };
+
+  const REDUCED = window.matchMedia
+    ? window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    : false;
+
+  /* ======================================================================
+     1 · REFERENCIAS DEL DOM
+     ====================================================================== */
+  const SECS = $$('main > section');
+  const TABS = $$('#chips .chip');
+  const LAST = SECS.length - 1;
+
+  const dr      = $('#dr');
+  const drList  = $('#drList');
+  const mb      = $('#mb');
+
+  const pb      = $('#pb');
+  const upBtn   = $('#up');
+  const so      = $('#so');
+  const soIn    = $('#soIn');
+  const soRes   = $('#soRes');
+
+  let current = 0;
+
+  /* ======================================================================
+     2 · PANEL DE ÍNDICE
+     ====================================================================== */
+  function setDrawer(open){
+    dr.classList.toggle('o', !!open);
+    mb.setAttribute('aria-expanded', dr.classList.contains('o') ? 'true' : 'false');
+    mb.setAttribute('aria-label', open ? 'Cerrar índice' : 'Abrir índice');
+  }
+  function toggleDrawer(){ setDrawer(!dr.classList.contains('o')); }
+
+  function drawerTitle(section, index){
+    const dt = section.getAttribute('data-t');
+    if (dt) return dt;
+    const h2 = section.querySelector('h2');
+    return h2 ? h2.textContent.trim() : ('Sección ' + index);
+  }
+
+  SECS.forEach(function(section, index){
+    const a = document.createElement('a');
+    a.setAttribute('href', '#s' + index);
+    a.textContent = (index ? index + '. ' : '') + drawerTitle(section, index);
+    a.addEventListener('click', function(ev){
+      ev.preventDefault();
+      go(index);
+      setDrawer(false);
+    });
+    drList.appendChild(a);
+  });
+
+  mb.addEventListener('click', function(ev){
+    ev.stopPropagation();
+    toggleDrawer();
+  });
+
+  $('#closeDr').addEventListener('click', function(){ setDrawer(false); });
+
+  document.addEventListener('keydown', function(ev){
+    if (ev.key === 'Escape'){
+      if (so.classList.contains('on')) { closeSearch(); return; }
+      setDrawer(false);
+    }
+  });
+
+  document.addEventListener('click', function(ev){
+    if (!ev.target.closest('#dr') && !ev.target.closest('#mb')) setDrawer(false);
+  });
+
+  /* ======================================================================
+     3 · NAVEGACIÓN ENTRE SECCIONES
+     ====================================================================== */
+  function go(index, skipScroll){
+    if (index < 0 || index > LAST) return;
+    current = index;
+
+    SECS.forEach(function(s, j){ s.classList.toggle('on', j === index); });
+    TABS.forEach(function(t, j){
+      const active = (j === index);
+      t.classList.toggle('on', active);
+      t.setAttribute('aria-selected', active ? 'true' : 'false');
+    });
+    $$('#drList a').forEach(function(a, j){ a.classList.toggle('on', j === index); });
+
+    if (!skipScroll) window.scrollTo({ top: 0, behavior: REDUCED ? 'auto' : 'smooth' });
+
+    mountSVG(index);
+    storage.set('gn_tab', String(index));
+
+    if (history.replaceState) {
+      try { history.replaceState(null, '', '#s' + index); } catch(e){}
+    }
+    updateProgress();
+  }
+
+  TABS.forEach(function(tab, index){
+    tab.addEventListener('click', function(){ go(index); });
+  });
+
+  $$('[data-goto]').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      const target = parseInt(btn.getAttribute('data-goto'), 10);
+      if (!isNaN(target)) go(target);
+    });
+  });
+
+  const ixBtn = $('#ix');
+  if (ixBtn) ixBtn.addEventListener('click', function(){ setDrawer(true); });
+
+  /* ======================================================================
+     4 · SVG COMPARTIDO (una sola plantilla, identificadores únicos)
+     ====================================================================== */
+  const tplNode = $('#svgTpl');
+  const SVG_TPL = tplNode ? tplNode.innerHTML : '';
+  if (tplNode) tplNode.remove();
+
+  const SVG_IDS = { 0: 'h', [LAST]: 'c' };
+
+  function mountSVG(index){
+    const uid = SVG_IDS[index];
+    if (!uid) return;
+
+    const container = (index === 0) ? $('#svgHome') : $('#svgCred');
+    if (!container) return;
+
+    if (container.getAttribute('data-mounted') === '1' && container.children.length) return;
+    if (!SVG_TPL) return;
+
+    container.innerHTML = SVG_TPL.replace(/__U__/g, uid);
+    container.setAttribute('data-mounted', '1');
+
+    const svg = container.querySelector('svg');
+    if (svg && REDUCED && typeof svg.pauseAnimations === 'function'){
+      try { svg.pauseAnimations(); svg.setCurrentTime(1.5); } catch(e){}
+    }
+  }
+
+  /* Reparación periódica: si un contenedor visible queda vacío, se vuelve a montar */
+  setInterval(function(){
+    if (document.hidden) return;
+    [0, LAST].forEach(function(idx){
+      const uid = SVG_IDS[idx];
+      if (!uid) return;
+      const c = (idx === 0) ? $('#svgHome') : $('#svgCred');
+      if (!c) return;
+      const visible = c.offsetParent !== null;
+      if (visible && c.children.length === 0){
+        c.setAttribute('data-mounted', '0');
+        mountSVG(idx);
+      }
+    });
+  }, 2000);
+
+  /* ======================================================================
+     5 · BARRA DE PROGRESO Y VOLVER ARRIBA
+     ====================================================================== */
+  function updateProgress(){
+    const doc = document.documentElement;
+    const max = (doc.scrollHeight - window.innerHeight);
+    const pct = max > 0 ? Math.min(100, Math.max(0, (window.scrollY / max) * 100)) : 0;
+    pb.style.width = pct + '%';
+
+    if (window.scrollY > 380) upBtn.classList.add('on');
+    else upBtn.classList.remove('on');
+  }
+
+  window.addEventListener('scroll', updateProgress, { passive: true });
+  window.addEventListener('resize', updateProgress);
+  upBtn.addEventListener('click', function(){
+    window.scrollTo({ top: 0, behavior: REDUCED ? 'auto' : 'smooth' });
+  });
+
+  /* ======================================================================
+     6 · TEMA CLARO / OSCURO Y TAMAÑO DE LETRA
+     ====================================================================== */
+  const themeBtn = $('#themeBtn');
+
+  function applyTheme(theme){
+    document.documentElement.setAttribute('data-theme', theme);
+    storage.set('gn_theme', theme);
+    if (themeBtn) themeBtn.textContent = (theme === 'dark') ? '◑ Tema' : '◐ Tema';
+  }
+
+  const savedTheme = storage.get('gn_theme');
+  applyTheme(savedTheme === 'light' ? 'light' : 'dark');
+
+  if (themeBtn){
+    themeBtn.addEventListener('click', function(){
+      const next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      applyTheme(next);
+    });
+  }
+
+  let fontSize = parseInt(storage.get('gn_font') || '16', 10);
+  if (isNaN(fontSize) || fontSize < 13 || fontSize > 22) fontSize = 16;
+  document.documentElement.style.fontSize = fontSize + 'px';
+
+  function setFont(delta){
+    fontSize = Math.min(22, Math.max(13, fontSize + delta));
+    document.documentElement.style.fontSize = fontSize + 'px';
+    storage.set('gn_font', String(fontSize));
+  }
+
+  const fsMinus = $('#fsMinus'), fsPlus = $('#fsPlus');
+  if (fsMinus) fsMinus.addEventListener('click', function(){ setFont(-1); });
+  if (fsPlus)  fsPlus.addEventListener('click', function(){ setFont(1); });
+
+  /* ======================================================================
+     7 · COPIAR AL PORTAPAPELES
+     ====================================================================== */
+  function legacyCopy(text){
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.setAttribute('readonly', '');
+    ta.style.position = 'fixed';
+    ta.style.top = '-1000px';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.select();
+    let ok = false;
+    try { ok = document.execCommand('copy'); } catch(e){ ok = false; }
+    document.body.removeChild(ta);
+    return ok;
+  }
+
+  function flash(btn, msg, good){
+    const original = btn.getAttribute('data-label') || btn.textContent;
+    btn.setAttribute('data-label', original);
+    btn.textContent = msg;
+    btn.classList.toggle('done', !!good);
+    window.setTimeout(function(){
+      btn.textContent = original;
+      btn.classList.remove('done');
+    }, 1600);
+  }
+
+  document.addEventListener('click', function(ev){
+    const btn = ev.target.closest('.cbtn');
+    if (!btn) return;
+
+    const block = btn.closest('.codeblk');
+    if (!block) return;
+    const pre = block.querySelector('pre');
+    if (!pre) return;
+
+    const text = pre.innerText;
+
+    if (navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(text).then(function(){
+        flash(btn, '✓ COPIADO', true);
+      }).catch(function(){
+        const ok = legacyCopy(text);
+        flash(btn, ok ? '✓ COPIADO' : '✕ SELECCIONA', ok);
+      });
+    } else {
+      const ok = legacyCopy(text);
+      flash(btn, ok ? '✓ COPIADO' : '✕ SELECCIONA', ok);
+    }
+  });
+
+  /* ======================================================================
+     8 · PERSISTENCIA DE LAS LISTAS DE COMPROBACIÓN
+     ====================================================================== */
+  const checks = $$('input[type="checkbox"][data-k]');
+
+  checks.forEach(function(cb){
+    const key = 'gn_chk_' + cb.getAttribute('data-k');
+    if (storage.get(key) === '1') cb.checked = true;
+
+    cb.addEventListener('change', function(){
+      storage.set(key, cb.checked ? '1' : '0');
+    });
+  });
+
+  const resetBtn = $('#resetBtn');
+  if (resetBtn){
+    resetBtn.addEventListener('click', function(){
+      checks.forEach(function(cb){
+        cb.checked = false;
+        storage.del('gn_chk_' + cb.getAttribute('data-k'));
+      });
+      storage.del('gn_tab');
+      storage.del('gn_theme');
+      storage.del('gn_font');
+      document.documentElement.style.fontSize = '16px';
+      applyTheme('dark');
+      go(0);
+      flash(resetBtn, '✓ BORRADO', true);
+    });
+  }
+
+  /* ======================================================================
+     9 · BUSCADOR INTERNO
+     ====================================================================== */
+  let searchIndex = null;
+
+  function buildIndex(){
+    if (searchIndex) return searchIndex;
+    searchIndex = [];
+    SECS.forEach(function(section, si){
+      const nodes = section.querySelectorAll('h2, h3, h4, p, li, summary');
+      Array.prototype.forEach.call(nodes, function(el){
+        const text = (el.textContent || '').replace(/\s+/g, ' ').trim();
+        if (text.length < 12) return;
+        searchIndex.push({ raw: text, low: text.toLowerCase(), si: si, el: el });
+      });
+    });
+    return searchIndex;
+  }
+
+  function openSearch(){
+    so.classList.add('on');
+    soIn.value = '';
+    soRes.innerHTML = '';
+    window.setTimeout(function(){ soIn.focus(); }, 30);
+  }
+
+  function closeSearch(){
+    so.classList.remove('on');
+    if (sb) sb.focus();
+  }
+
+  function renderResults(term){
+    soRes.innerHTML = '';
+    const q = term.trim().toLowerCase();
+    if (q.length < 2) return;
+
+    const idx = buildIndex();
+    const hits = [];
+    for (let i = 0; i < idx.length && hits.length < 40; i++){
+      if (idx[i].low.indexOf(q) !== -1) hits.push(idx[i]);
+    }
+
+    if (!hits.length){
+      const li = document.createElement('li');
+      const p = document.createElement('p');
+      p.style.cssText = 'margin:10px 2px;color:var(--mut);font-size:.88rem';
+      p.textContent = 'Sin resultados para «' + term + '».';
+      li.appendChild(p);
+      soRes.appendChild(li);
+      return;
+    }
+
+    hits.forEach(function(hit){
+      const li = document.createElement('li');
+      const btn = document.createElement('button');
+      btn.type = 'button';
+
+      const name = document.createElement('span');
+      name.className = 'secName';
+      name.textContent = drawerTitle(SECS[hit.si], hit.si);
+
+      const snip = document.createElement('span');
+      snip.className = 'snip';
+      snip.textContent = hit.raw.length > 110 ? hit.raw.slice(0, 110) + '…' : hit.raw;
+
+      btn.appendChild(name);
+      btn.appendChild(snip);
+
+      btn.addEventListener('click', function(){
+        closeSearch();
+        go(hit.si, true);
+        window.setTimeout(function(){
+          if (hit.el && hit.el.scrollIntoView){
+            hit.el.scrollIntoView({ behavior: REDUCED ? 'auto' : 'smooth', block: 'center' });
+          }
+        }, 80);
+      });
+
+      li.appendChild(btn);
+      soRes.appendChild(li);
+    });
+  }
+
+  const sb = $('#sb');
+  if (sb) sb.addEventListener('click', openSearch);
+  if (soIn) soIn.addEventListener('input', function(){ renderResults(soIn.value); });
+  const soClose = $('#soClose');
+  if (soClose) soClose.addEventListener('click', closeSearch);
+  if (so) so.addEventListener('click', function(ev){ if (ev.target === so) closeSearch(); });
+
+  /* ======================================================================
+     10 · IMPRESIÓN / PDF
+     ====================================================================== */
+  let openedForPrint = [];
+
+  function preparePrint(){
+    openedForPrint = $$('details').filter(function(d){ return !d.open; });
+    openedForPrint.forEach(function(d){ d.open = true; });
+
+    mountSVG(0);
+    mountSVG(LAST);
+
+    /* Fuerza un estado visual completo de las animaciones SVG */
+    $$('.heroSvg').forEach(function(svg){
+      if (typeof svg.pauseAnimations === 'function'){
+        try { svg.pauseAnimations(); svg.setCurrentTime(2); } catch(e){}
+      }
+    });
+  }
+
+  function restoreAfterPrint(){
+    openedForPrint.forEach(function(d){ d.open = false; });
+    openedForPrint = [];
+  }
+
+  window.addEventListener('beforeprint', preparePrint);
+  window.addEventListener('afterprint', restoreAfterPrint);
+
+  const printBtn = $('#printBtn');
+  if (printBtn){
+    printBtn.addEventListener('click', function(){
+      preparePrint();
+      try {
+        window.print();
+      } catch(e){
+        alert('El navegador ha bloqueado la impresión. Abre este archivo directamente en el navegador y utiliza Ctrl+P o Cmd+P.');
+      }
+      window.setTimeout(restoreAfterPrint, 600);
+    });
+  }
+
+  /* ======================================================================
+     11 · ARRANQUE
+     ====================================================================== */
+  function bootstrap(){
+    let initial = 0;
+
+    const hash = window.location.hash;
+    if (hash && /^#s\d+$/.test(hash)){
+      const parsed = parseInt(hash.slice(2), 10);
+      if (!isNaN(parsed) && parsed >= 0 && parsed <= LAST) initial = parsed;
+    } else {
+      const stored = parseInt(storage.get('gn_tab') || '0', 10);
+      if (!isNaN(stored) && stored >= 0 && stored <= LAST) initial = stored;
+    }
+
+    go(initial, true);
+    mountSVG(0);
+    mountSVG(LAST);
+    updateProgress();
+
+    window.addEventListener('hashchange', function(){
+      const h = window.location.hash;
+      if (h && /^#s\d+$/.test(h)){
+        const parsed = parseInt(h.slice(2), 10);
+        if (!isNaN(parsed) && parsed !== current) go(parsed, true);
+      }
+    });
+  }
+
+  if (document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', bootstrap);
+  } else {
+    bootstrap();
+  }
+
+})();
+</script>
+</body>
+</html>
